@@ -21,10 +21,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="rounded-2xl border border-black/[0.06] bg-white shadow-[0_24px_48px_rgba(0,0,0,0.08)]"
-        onClose={() => onOpenChange(false)}
-      >
+      <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
           <DialogTitle className="text-textPrimary">Settings</DialogTitle>
           <DialogDescription className="text-textSecondary">
@@ -34,8 +31,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         <div className="mt-4">
           <label
             className={cn(
-              "flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-black/[0.06] bg-black/[0.02] px-4 py-3 transition-colors hover:bg-black/[0.04]",
-              settings.includeInvestmentsInNetCashflow && "border-accentPrimary/30 bg-accentPrimary/5"
+              "flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 dark:border-white/10 bg-black/[0.03] dark:bg-white/5 px-4 py-3 transition-all duration-normal ease-liquid hover:bg-black/[0.05] dark:hover:bg-white/10",
+              settings.includeInvestmentsInNetCashflow && "border-accentPrimary/40 bg-accentPrimary/10 dark:bg-accentPrimary/20"
             )}
             htmlFor="include-investments"
           >

@@ -239,7 +239,7 @@ export function MonthlyInputClient() {
         </CardContent>
       </Card>
 
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-black/[0.06] bg-white/70 backdrop-blur-xl px-6 py-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] lg:pl-[72px] supports-[backdrop-filter]:bg-white/60">
+      <div className="fixed bottom-0 left-0 right-0 z-30 glass-panel border-t border-white/20 dark:border-white/10 px-6 py-4 shadow-glass lg:pl-[72px]">
         <div className="mx-auto max-w-4xl">
           <div className="text-h3 mb-2">Totaluri (Paul + Codru)</div>
           <div className="flex flex-wrap gap-6 text-small">

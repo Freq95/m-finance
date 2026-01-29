@@ -16,9 +16,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ThemeInjector />
-      <div className="flex min-h-screen bg-gradient-to-b from-background via-[#F2F4F8] to-[#EEF1F5] dark:from-gray-900 dark:via-gray-900 dark:to-gray-950">
+      <div className="flex min-h-screen">
+        <div className="absolute inset-0 bg-gradient-to-b from-background-deep/60 via-transparent to-background-deep/60 dark:from-black/50 dark:via-transparent dark:to-black/50 pointer-events-none" aria-hidden />
         <Sidebar />
-        <div className="flex flex-1 flex-col min-w-0 lg:pl-[72px]">
+        <div className="flex flex-1 flex-col min-w-0 lg:pl-[72px] relative">
           <Header
             onOpenSettings={isDashboard ? () => setSettingsOpen(true) : undefined}
           />

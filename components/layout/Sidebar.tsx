@@ -33,7 +33,7 @@ export function Sidebar() {
   return (
     <>
       <button
-        className="fixed left-4 top-4 z-50 lg:hidden rounded-xl p-2.5 bg-black/20 backdrop-blur-xl text-white border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.15)] transition-all duration-300"
+        className="fixed left-4 top-4 z-50 lg:hidden rounded-2xl p-2.5 bg-gray-900/80 dark:bg-black/60 backdrop-blur-glass border border-white/10 text-white shadow-glass transition-all duration-normal ease-liquid"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
         aria-label="Toggle menu"
       >
@@ -42,7 +42,7 @@ export function Sidebar() {
 
       {isMobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 z-40 glass-overlay lg:hidden transition-opacity duration-normal"
           onClick={() => setIsMobileOpen(false)}
           aria-hidden="true"
         />
@@ -50,7 +50,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen w-[72px] bg-[#1F2937]/75 backdrop-blur-xl border-r border-white/10 shadow-[4px_0_24px_rgba(0,0,0,0.08)] transition-all duration-300 ease-out",
+          "fixed left-0 top-0 z-40 h-screen w-[72px] bg-gray-900/75 dark:bg-black/70 backdrop-blur-glass border-r border-white/10 shadow-glass transition-transform duration-normal ease-liquid",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -72,7 +72,7 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
-                    "relative flex h-11 w-12 items-center justify-center text-white/65 transition-all duration-200 ease-out rounded-xl mx-1.5 hover:bg-white/10 hover:text-white",
+                    "relative flex h-11 w-12 items-center justify-center text-white/70 transition-all duration-normal ease-liquid rounded-xl mx-1.5 hover:bg-white/15 hover:text-white",
                     isActive && "text-white"
                   )}
                   title={item.name}
@@ -88,7 +88,7 @@ export function Sidebar() {
                     <item.icon className="h-5 w-5" strokeWidth={2} />
                     {item.badge != null && (
                       <span
-                        className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white shadow-sm"
+                        className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white shadow-soft"
                         aria-hidden="true"
                       >
                         {item.badge}
@@ -100,7 +100,7 @@ export function Sidebar() {
             })}
           </nav>
           <button
-            className="mt-auto lg:hidden p-2.5 rounded-xl mx-1.5 text-white/60 hover:bg-white/10 hover:text-white transition-all duration-200"
+            className="mt-auto lg:hidden p-2.5 rounded-xl mx-1.5 text-white/60 hover:bg-white/15 hover:text-white transition-all duration-normal ease-liquid"
             onClick={() => setIsMobileOpen(false)}
             aria-label="Close menu"
           >

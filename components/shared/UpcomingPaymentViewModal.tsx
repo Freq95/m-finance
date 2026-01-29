@@ -46,10 +46,7 @@ export function UpcomingPaymentViewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="rounded-2xl border border-black/[0.06] bg-white shadow-[0_24px_48px_rgba(0,0,0,0.08)]"
-        onClose={() => onOpenChange(false)}
-      >
+      <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
           <DialogTitle className="text-textPrimary flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/[0.06]">

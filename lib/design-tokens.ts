@@ -41,7 +41,7 @@ export const colors = {
 
 export const typography = {
   fontFamily:
-    "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif",
 
   // Headings
   h1: {
@@ -111,14 +111,16 @@ export const spacing = {
 } as const;
 
 export const shadows = {
-  card: "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
-  cardHover: "0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)",
-  modal: "0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04)",
-  sidebar: "2px 0 4px rgba(0, 0, 0, 0.05)",
+  card: "0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)",
+  cardHover: "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)",
+  modal: "0 24px 48px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06)",
+  sidebar: "4px 0 24px rgba(0, 0, 0, 0.06)",
+  glass: "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)",
 } as const;
 
 export const transitions = {
-  default: "150ms ease",
-  page: "200ms ease-out",
-  modal: "200ms ease-out",
+  default: "200ms cubic-bezier(0.33, 1, 0.68, 1)",
+  page: "320ms cubic-bezier(0.33, 1, 0.68, 1)",
+  modal: "320ms cubic-bezier(0.33, 1, 0.68, 1)",
+  liquid: "320ms cubic-bezier(0.33, 1, 0.68, 1)",
 } as const;

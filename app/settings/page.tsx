@@ -61,29 +61,29 @@ export default function SettingsPage() {
   return (
     <div className="max-w-xl space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-textPrimary">Settings</h1>
-        <p className="text-sm text-textSecondary mt-0.5">
+        <h1 className="text-2xl font-bold text-textPrimary dark:text-gray-100">Settings</h1>
+        <p className="text-sm text-textSecondary dark:text-gray-400 mt-0.5">
           Configure how your dashboard and calculations work.
         </p>
       </div>
 
-      <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-6">
-        <h2 className="text-lg font-semibold text-textPrimary mb-1">
+      <section className="rounded-2xl glass-panel shadow-soft p-6">
+        <h2 className="text-lg font-semibold text-textPrimary dark:text-gray-100 mb-1">
           Net cashflow
         </h2>
-        <p className="text-sm text-textSecondary mb-4">
+        <p className="text-sm text-textSecondary dark:text-gray-400 mb-4">
           Choose whether to include investments (Economii / Investiții) in the
           net cashflow calculation on the dashboard and in history.
         </p>
         <label
           className={cn(
-            "flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-black/[0.06] bg-black/[0.02] px-4 py-3 transition-colors hover:bg-black/[0.04]",
+            "flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 dark:border-white/10 bg-black/[0.03] dark:bg-white/5 px-4 py-3 transition-all duration-normal ease-liquid hover:bg-black/[0.05] dark:hover:bg-white/10",
             settings.includeInvestmentsInNetCashflow &&
-              "border-accentPrimary/30 bg-accentPrimary/5"
+              "border-accentPrimary/40 bg-accentPrimary/10 dark:bg-accentPrimary/20"
           )}
           htmlFor="settings-include-investments"
         >
-          <span className="text-sm font-medium text-textPrimary">
+          <span className="text-sm font-medium text-textPrimary dark:text-gray-200">
             Include investments in net cashflow
           </span>
           <input
@@ -98,15 +98,15 @@ export default function SettingsPage() {
             className="h-4 w-4 rounded border-border text-accentPrimary focus:ring-2 focus:ring-accentPrimary/30"
           />
         </label>
-        <p className="mt-2 text-xs text-textSecondary">
+        <p className="mt-2 text-xs text-textSecondary dark:text-gray-400">
           When on: net cashflow = income − expenses − investments. When off:
           investments are excluded.
         </p>
       </section>
 
-      <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-6">
-        <h2 className="text-lg font-semibold text-textPrimary mb-1">Data</h2>
-        <p className="text-sm text-textSecondary mb-4">
+      <section className="rounded-2xl glass-panel shadow-soft p-6">
+        <h2 className="text-lg font-semibold text-textPrimary dark:text-gray-100 mb-1">Data</h2>
+        <p className="text-sm text-textSecondary dark:text-gray-400 mb-4">
           Export a JSON backup of all your data, or restore from a previous
           backup. Import replaces all current data.
         </p>

@@ -91,10 +91,7 @@ export function UpcomingPaymentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="rounded-2xl border border-black/[0.06] bg-white shadow-[0_24px_48px_rgba(0,0,0,0.08)]"
-        onClose={() => onOpenChange(false)}
-      >
+      <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
           <DialogTitle className="text-textPrimary">
             {editItem ? "Editează plata" : "Plată viitoare"}
