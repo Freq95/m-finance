@@ -11,19 +11,30 @@ interface DialogProps {
 }
 
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
+  React.useEffect(() => {
+    if (!open) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange?.(false);
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [open, onOpenChange]);
+
   if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={() => onOpenChange?.(false)}
+      role="dialog"
+      aria-modal="true"
     >
       <div
         className="fixed inset-0 bg-black/50"
         aria-hidden="true"
       />
       <div
-        className="relative z-50"
+        className="relative z-50 max-h-[90vh] overflow-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {children}

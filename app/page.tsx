@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import {
   calculateIncomeTotal,
@@ -23,6 +23,7 @@ import {
   User,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 import {
   BarChart,
   Bar,
@@ -68,6 +69,8 @@ const metricCards = [
 
 export default function Home() {
   const loadRecords = useFinanceStore((s) => s.loadRecords);
+  const clearError = useFinanceStore((s) => s.clearError);
+  const error = useFinanceStore((s) => s.error);
   const isLoading = useFinanceStore((s) => s.isLoading);
   const getLast12Months = useFinanceStore((s) => s.getLast12Months);
   const getLast6Months = useFinanceStore((s) => s.getLast6Months);
@@ -81,7 +84,7 @@ export default function Home() {
   const last12 = getLast12Months();
   const last6 = getLast6Months();
 
-  const currentData = (() => {
+  const currentData = useMemo(() => {
     const latest = last12[0];
     if (!latest) return null;
     const data = getCombinedData(latest.month);
@@ -92,20 +95,24 @@ export default function Home() {
       expenses: calculateExpensesTotal(data),
       cashflow: calculateNetCashflow(data, includeInv),
     };
-  })();
+  }, [last12, getCombinedData, includeInv]);
 
-  const chartData = last12
-    .slice()
-    .reverse()
-    .map((r) => {
-      const d = getCombinedData(r.month);
-      const expenses = d ? calculateExpensesTotal(d) : 0;
-      return {
-        month: formatMonthShort(r.month).split(" ")[0],
-        full: formatMonthShort(r.month),
-        expense: expenses,
-      };
-    });
+  const chartData = useMemo(
+    () =>
+      last12
+        .slice()
+        .reverse()
+        .map((r) => {
+          const d = getCombinedData(r.month);
+          const expenses = d ? calculateExpensesTotal(d) : 0;
+          return {
+            month: formatMonthShort(r.month).split(" ")[0],
+            full: formatMonthShort(r.month),
+            expense: expenses,
+          };
+        }),
+    [last12, getCombinedData]
+  );
 
   const maxExpense = Math.max(...chartData.map((d) => d.expense), 1);
 
@@ -162,6 +169,14 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
+      {error && (
+        <ErrorBanner
+          message={error}
+          onRetry={loadRecords}
+          onDismiss={clearError}
+          retryLabel="Reîncarcă"
+        />
+      )}
       {/* Frosted metric cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metricCards.map((m) => {

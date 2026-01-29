@@ -47,6 +47,7 @@ interface FinanceStore {
   setSelectedPerson: (person: PersonView) => void;
   setSelectedMonth: (month: MonthString) => void;
   updateSettings: (settings: Partial<FinanceStore["settings"]>) => void;
+  clearError: () => void;
 
   // Selectors (computed)
   getCurrentMonthRecord: () => MonthRecord | null;
@@ -171,9 +172,10 @@ export const useFinanceStore = create<FinanceStore>()(
               updatedAt: new Date().toISOString(),
             },
           };
-          set({ records, isSaving: true });
+          set({ records, isSaving: true, error: null });
           try {
             await saveRecords(records);
+            set({ error: null });
           } catch (error) {
             logError(error, "saveMonth");
             set({ error: "Failed to save" });
@@ -182,6 +184,8 @@ export const useFinanceStore = create<FinanceStore>()(
           }
         }
       },
+
+      clearError: () => set({ error: null }),
 
       // Duplicate month data
       duplicateMonth: (fromMonth, toMonth) => {

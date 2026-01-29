@@ -36,10 +36,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 import { Save, Copy, RotateCcw } from "lucide-react";
 
 export function MonthlyInputClient() {
   const loadRecords = useFinanceStore((s) => s.loadRecords);
+  const clearError = useFinanceStore((s) => s.clearError);
+  const error = useFinanceStore((s) => s.error);
   const selectedMonth = useFinanceStore((s) => s.selectedMonth);
   const setSelectedMonth = useFinanceStore((s) => s.setSelectedMonth);
   const getCurrentMonthRecord = useFinanceStore((s) => s.getCurrentMonthRecord);
@@ -145,6 +148,14 @@ export function MonthlyInputClient() {
 
   return (
     <div className="space-y-6 pb-32">
+      {error && (
+        <ErrorBanner
+          message={error}
+          onRetry={() => (error === "Failed to save" ? saveMonth(selectedMonth) : loadRecords())}
+          onDismiss={clearError}
+          retryLabel={error === "Failed to save" ? "Salvează din nou" : "Reîncarcă"}
+        />
+      )}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-h1">Monthly Input</h1>
         <div className="flex flex-wrap items-center gap-3">
@@ -153,6 +164,7 @@ export function MonthlyInputClient() {
             onClick={() => setDupDialogOpen(true)}
             disabled={!hasPrevRecord}
             variant="secondary"
+            aria-label={hasPrevRecord ? "Duplică luna anterioară" : "Nu există lună anterioară de duplicat"}
           >
             <Copy className="mr-2 h-4 w-4" />
             Duplică luna anterioară
@@ -160,11 +172,16 @@ export function MonthlyInputClient() {
           <Button
             onClick={() => setResetDialogOpen(true)}
             variant="secondary"
+            aria-label="Resetează luna la zero"
           >
             <RotateCcw className="mr-2 h-4 w-4" />
             Resetează luna
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            aria-label={isSaving ? "Se salvează…" : "Salvează luna curentă"}
+          >
             {isSaving ? (
               <LoadingSpinner size="sm" className="mr-2" />
             ) : (

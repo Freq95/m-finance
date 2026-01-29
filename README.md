@@ -88,10 +88,12 @@ m-finance-dash/
 - Settings modal (investments in net cashflow toggle) from dashboard header
 - Dashboard skeleton loading; RON formatting; responsive layout
 
-### Phase 4: Polish & Refinement
-- UX improvements
-- Accessibility
-- Performance optimization
+### Phase 4: Polish & Refinement ✅
+- Error handling: ErrorBanner with Retry/Dismiss on dashboard and Monthly Input; clearError and save success clear
+- Confirmation dialogs: Duplicate month and Reset month (already in place)
+- Accessibility: ARIA labels (Duplicate, Reset, Save), role="alert" on error, Dialog role="dialog" aria-modal, Escape to close
+- Performance: useMemo for dashboard chartData and currentData
+- Edge cases: empty states, Duplicate disabled when no previous month, formatRON handles NaN/large numbers
 
 ## Features
 
