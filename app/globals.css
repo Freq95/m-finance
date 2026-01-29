@@ -36,16 +36,16 @@
   }
 
   .dark {
-    /* Dark theme — deep black with glassy panels */
+    /* Dark theme — deep black with glassy panels; high-contrast text */
     --background: 0, 0, 0;
-    --background-deep: 10, 10, 12;
+    --background-deep: 8, 8, 10;
     --foreground: 255, 255, 255;
-    --foreground-secondary: 235, 235, 240;
-    --foreground-tertiary: 174, 174, 178;
-    --glass-bg: 44, 44, 46;
+    --foreground-secondary: 230, 230, 235;
+    --foreground-tertiary: 190, 190, 198;
+    --glass-bg: 30, 30, 34;
     --glass-border: 255, 255, 255;
-    --glass-opacity: 0.45;
-    --glass-border-opacity: 0.12;
+    --glass-opacity: 0.55;
+    --glass-border-opacity: 0.14;
     --glass-blur: 40px;
     --surface-elevated: 44, 44, 46;
     --surface-elevated-opacity: 0.6;
@@ -63,8 +63,7 @@
 
   body {
     @apply antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-      "Helvetica Neue", system-ui, sans-serif;
+    font-family: var(--font-poppins), "Poppins", sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
     background-color: rgb(var(--background));
     color: rgb(var(--foreground));

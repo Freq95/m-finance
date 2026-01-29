@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { formatRON } from "@/lib/utils/currency";
+import { formatRONCompact } from "@/lib/utils/currency";
 import { format, parseISO } from "date-fns";
 import { ro } from "date-fns/locale";
 
@@ -48,36 +48,36 @@ export function UpcomingPaymentViewModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
-          <DialogTitle className="text-textPrimary flex items-center gap-3">
+          <DialogTitle className="text-textPrimary dark:text-white flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/[0.06]">
-              <Icon className="h-5 w-5 text-textSecondary" />
+              <Icon className="h-5 w-5 text-textSecondary dark:text-gray-300" />
             </div>
             <span className="break-words">{item.title}</span>
           </DialogTitle>
-          <DialogDescription className="text-textSecondary">
+          <DialogDescription className="text-textSecondary dark:text-gray-300">
             Detalii plată viitoare
           </DialogDescription>
         </DialogHeader>
 
         <div className="mt-4 space-y-4">
           <div>
-            <p className="text-xs font-medium text-textSecondary uppercase tracking-wide mb-0.5">
+            <p className="text-xs text-textSecondary dark:text-gray-300 uppercase tracking-wide mb-0.5">
               Titlu
             </p>
-            <p className="text-sm text-textPrimary break-words">{item.title}</p>
+            <p className="text-sm text-textPrimary dark:text-white break-words">{item.title}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-textSecondary uppercase tracking-wide mb-0.5">
+            <p className="text-xs text-textSecondary dark:text-gray-300 uppercase tracking-wide mb-0.5">
               Data
             </p>
-            <p className="text-sm text-textPrimary">{dateLabel}</p>
+            <p className="text-sm text-textPrimary dark:text-white">{dateLabel}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-textSecondary uppercase tracking-wide mb-0.5">
+            <p className="text-xs text-textSecondary dark:text-gray-300 uppercase tracking-wide mb-0.5">
               Sumă
             </p>
-            <p className="text-sm font-semibold text-textPrimary tabular-nums">
-              {item.cost != null ? formatRON(item.cost) : "— (necunoscută)"}
+            <p className="text-sm text-textPrimary dark:text-white tabular-nums">
+              {item.cost != null ? formatRONCompact(item.cost) : "— (necunoscută)"}
             </p>
           </div>
         </div>

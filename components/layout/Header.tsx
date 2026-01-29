@@ -44,16 +44,16 @@ export function Header({
     <header className="h-16 shrink-0 glass-panel border-b border-white/20 dark:border-white/10 px-6 flex items-center gap-6 rounded-none">
       <div className="flex min-w-0 flex-1 items-center gap-8">
         <div className="shrink-0">
-          <h1 className="text-[22px] font-bold text-textPrimary tracking-tight truncate dark:text-gray-100">
+          <h1 className="text-[22px] font-semibold text-textPrimary tracking-tight truncate dark:text-white">
             {title}
           </h1>
-          <p className="text-sm text-textSecondary truncate mt-0.5 dark:text-gray-400">
+          <p className="text-sm text-textSecondary truncate mt-0.5 dark:text-gray-300">
             {subtitle}
           </p>
         </div>
         <div className="hidden md:block flex-1 max-w-sm">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-textMuted dark:text-gray-500" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-textMuted dark:text-gray-300" />
             <Input
               type="search"
               placeholder="Search"
@@ -77,8 +77,8 @@ export function Header({
               className={cn(
                 "rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid min-w-[4rem] sm:min-w-0",
                 selectedPerson === opt.value
-                  ? "bg-white/90 dark:bg-white/20 text-textPrimary dark:text-gray-100 shadow-soft border border-white/30 dark:border-white/20"
-                  : "text-textSecondary hover:text-textPrimary hover:bg-black/[0.04] dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
+                  ? "bg-white/90 dark:bg-white/20 text-textPrimary dark:text-white shadow-soft border border-white/30 dark:border-white/20"
+                  : "text-textSecondary hover:text-textPrimary hover:bg-black/[0.04] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
               )}
             >
               {opt.label}
@@ -87,14 +87,14 @@ export function Header({
         </div>
         <button
           type="button"
-          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
+          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
           aria-label="Calendar"
         >
           <Calendar className="h-5 w-5" />
         </button>
         <button
           type="button"
-          className="relative rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
+          className="relative rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
@@ -106,7 +106,7 @@ export function Header({
         <button
           type="button"
           onClick={toggleTheme}
-          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
+          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
           aria-label={
             theme === "dark"
               ? "Comută la modul deschis"
@@ -123,7 +123,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
+            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
@@ -131,7 +131,7 @@ export function Header({
         ) : (
           <Link
             href="/settings"
-            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
+            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />

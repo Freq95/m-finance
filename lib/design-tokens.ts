@@ -40,25 +40,24 @@ export const colors = {
 } as const;
 
 export const typography = {
-  fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif",
+  fontFamily: "var(--font-poppins), 'Poppins', sans-serif",
 
   // Headings
   h1: {
     fontSize: "32px",
-    fontWeight: 700,
+    fontWeight: 600,
     lineHeight: 1.2,
     letterSpacing: "-0.02em",
   },
   h2: {
     fontSize: "24px",
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.3,
     letterSpacing: "-0.01em",
   },
   h3: {
     fontSize: "18px",
-    fontWeight: 600,
+    fontWeight: 500,
     lineHeight: 1.4,
   },
 
@@ -72,7 +71,7 @@ export const typography = {
   // Labels & Small
   label: {
     fontSize: "14px",
-    fontWeight: 500,
+    fontWeight: 400,
     lineHeight: 1.4,
   },
   small: {
@@ -90,7 +89,7 @@ export const typography = {
   // Metric Values
   metricValue: {
     fontSize: "28px",
-    fontWeight: 700,
+    fontWeight: 400,
     lineHeight: 1.2,
   },
 } as const;

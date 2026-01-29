@@ -77,7 +77,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
           )}
           {...props}
         />
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-textMuted">
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-textMuted dark:text-gray-400">
           RON
         </span>
       </div>

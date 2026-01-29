@@ -75,7 +75,7 @@ export function Calendar({
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <div className="text-h3 font-semibold">
+        <div className="text-h3 font-medium">
           {format(currentMonth, "LLLL yyyy", { locale: ro })}
         </div>
         <Button

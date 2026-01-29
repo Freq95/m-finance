@@ -135,7 +135,7 @@ const DialogTitle = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "text-h2 font-semibold leading-none tracking-tight text-textPrimary dark:text-gray-100",
+      "text-h2 font-medium leading-none tracking-tight text-textPrimary dark:text-white",
       className
     )}
     {...props}
@@ -149,7 +149,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-textSecondary dark:text-gray-400", className)}
+    className={cn("text-sm text-textSecondary dark:text-gray-300", className)}
     {...props}
   />
 ));

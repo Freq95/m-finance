@@ -61,17 +61,17 @@ export default function SettingsPage() {
   return (
     <div className="max-w-xl space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-textPrimary dark:text-gray-100">Settings</h1>
-        <p className="text-sm text-textSecondary dark:text-gray-400 mt-0.5">
+        <h1 className="text-2xl font-medium text-textPrimary dark:text-white">Settings</h1>
+        <p className="text-sm text-textSecondary dark:text-gray-300 mt-0.5">
           Configure how your dashboard and calculations work.
         </p>
       </div>
 
       <section className="rounded-2xl glass-panel shadow-soft p-6">
-        <h2 className="text-lg font-semibold text-textPrimary dark:text-gray-100 mb-1">
+        <h2 className="text-lg font-medium text-textPrimary dark:text-white mb-1">
           Net cashflow
         </h2>
-        <p className="text-sm text-textSecondary dark:text-gray-400 mb-4">
+        <p className="text-sm text-textSecondary dark:text-gray-300 mb-4">
           Choose whether to include investments (Economii / Investiții) in the
           net cashflow calculation on the dashboard and in history.
         </p>
@@ -83,7 +83,7 @@ export default function SettingsPage() {
           )}
           htmlFor="settings-include-investments"
         >
-          <span className="text-sm font-medium text-textPrimary dark:text-gray-200">
+          <span className="text-sm text-textPrimary dark:text-gray-100">
             Include investments in net cashflow
           </span>
           <input
@@ -98,15 +98,15 @@ export default function SettingsPage() {
             className="h-4 w-4 rounded border-border text-accentPrimary focus:ring-2 focus:ring-accentPrimary/30"
           />
         </label>
-        <p className="mt-2 text-xs text-textSecondary dark:text-gray-400">
+        <p className="mt-2 text-xs text-textSecondary dark:text-gray-300">
           When on: net cashflow = income − expenses − investments. When off:
           investments are excluded.
         </p>
       </section>
 
       <section className="rounded-2xl glass-panel shadow-soft p-6">
-        <h2 className="text-lg font-semibold text-textPrimary dark:text-gray-100 mb-1">Data</h2>
-        <p className="text-sm text-textSecondary dark:text-gray-400 mb-4">
+        <h2 className="text-lg font-medium text-textPrimary dark:text-white mb-1">Data</h2>
+        <p className="text-sm text-textSecondary dark:text-gray-300 mb-4">
           Export a JSON backup of all your data, or restore from a previous
           backup. Import replaces all current data.
         </p>

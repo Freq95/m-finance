@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import { CATEGORY_SECTIONS } from "@/lib/constants";
 import type { CategoryAmounts, UpcomingPayment } from "@/lib/types";
-import { formatRON } from "@/lib/utils/currency";
+import { formatRON, formatRONCompact } from "@/lib/utils/currency";
 import { formatMonthShort } from "@/lib/utils/date";
-import { CreditCard, Plus, Pencil } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { getUpcomingPaymentIcon } from "@/lib/upcoming-payment-icons";
 import { UpcomingPaymentModal } from "@/components/shared/UpcomingPaymentModal";
 import { UpcomingPaymentViewModal } from "@/components/shared/UpcomingPaymentViewModal";
@@ -85,13 +85,6 @@ export function RightSidebar() {
     setPaymentModalOpen(true);
   };
 
-  const cardHolder =
-    selectedPerson === "me"
-      ? "Paul"
-      : selectedPerson === "wife"
-        ? "Codru"
-        : "Împreună";
-
   const last12 = getLast12Months();
   const latestRecord = last12[0];
   const dataForPerson =
@@ -106,64 +99,11 @@ export function RightSidebar() {
     : "—";
 
   return (
-    <aside className="hidden lg:flex w-[320px] shrink-0 flex-col gap-6 glass-panel border-l border-white/20 dark:border-white/10 p-6 overflow-y-auto rounded-none">
-      {/* Credit card — frosted dark glass */}
-      <div className="relative rounded-2xl bg-gradient-to-br from-[#111827]/90 to-sidebar/90 backdrop-blur-md p-5 text-white shadow-glass overflow-hidden border border-white/10">
-        <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-orange-500/25 to-red-500/15 rounded-full -translate-y-1/2 translate-x-1/2 backdrop-blur-sm" />
-        <CreditCard className="relative h-5 w-5 text-white/50 mb-5" />
-        <p className="relative text-[10px] text-white/50 uppercase tracking-widest mb-0.5">
-          Card holder
-        </p>
-        <p className="relative font-semibold text-sm">{cardHolder}</p>
-        <p className="relative mt-5 font-mono text-sm tracking-[0.2em] text-white/90">
-          4562 1122 4595 7852
-        </p>
-        <div className="relative mt-4 flex justify-end">
-          <div className="flex -space-x-1">
-            <span className="h-6 w-6 rounded-full bg-[#EB001B]" />
-            <span className="h-6 w-6 rounded-full bg-[#F79E1B]" />
-          </div>
-        </div>
-      </div>
-
-      {/* Recent activities */}
-      <section>
-        <h3 className="text-sm font-semibold text-textPrimary mb-0.5 dark:text-gray-100">
-          Recent Activities
-        </h3>
-        <p className="text-xs text-textSecondary mb-3 dark:text-gray-400">
-          {activitiesDate}
-        </p>
-        <ul className="space-y-1">
-          {recentActivities.length ? (
-            recentActivities.map((a) => (
-              <li
-                key={a.label}
-                className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors duration-normal ease-liquid"
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.05] dark:bg-white/10" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-textPrimary truncate dark:text-gray-200">
-                    {a.label}
-                  </p>
-                </div>
-                <span className="text-sm font-semibold text-textPrimary shrink-0 tabular-nums dark:text-gray-200">
-                  {formatRON(a.amount)}
-                </span>
-              </li>
-            ))
-          ) : (
-            <li className="text-xs text-textSecondary py-2 dark:text-gray-400">
-              No spending data. Add data in Monthly Input.
-            </li>
-          )}
-        </ul>
-      </section>
-
+    <aside className="hidden lg:flex w-[400px] min-w-[400px] shrink-0 flex-col gap-6 glass-panel border-l border-white/20 dark:border-white/10 p-6 overflow-y-auto rounded-none">
       {/* Upcoming payments */}
-      <section>
+      <section className="min-w-0">
         <div className="flex items-center justify-between mb-0.5">
-          <h3 className="text-sm font-semibold text-textPrimary dark:text-gray-100">
+          <h3 className="text-sm font-medium text-textPrimary dark:text-white">
             Upcoming Payments
           </h3>
           <Button
@@ -177,12 +117,12 @@ export function RightSidebar() {
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-xs text-textSecondary mb-3 dark:text-gray-400">
+        <p className="text-xs text-textSecondary mb-3 dark:text-gray-300">
           {upcomingPayments.length
             ? `${upcomingPayments.length} plăți`
             : "Nicio plată"}
         </p>
-        <ul className="space-y-1">
+        <ul className="space-y-2">
           {upcomingPayments.length ? (
             upcomingPayments
               .slice()
@@ -210,21 +150,21 @@ export function RightSidebar() {
                         openViewPayment(item);
                       }
                     }}
-                    className="flex items-start gap-3 rounded-xl p-2.5 -mx-1 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors duration-normal ease-liquid group cursor-pointer"
+                    className="flex items-start gap-3 rounded-xl p-3 -mx-1 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors duration-normal ease-liquid group cursor-pointer"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.05] dark:bg-white/10">
-                      <Icon className="h-4 w-4 text-textSecondary dark:text-gray-400" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/[0.05] dark:bg-white/10">
+                      <Icon className="h-5 w-5 text-textSecondary dark:text-gray-300" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-textPrimary break-words dark:text-gray-200">
+                      <p className="text-sm leading-snug text-textPrimary break-words dark:text-gray-100">
                         {item.title}
                       </p>
-                      <p className="text-xs text-textSecondary mt-0.5 dark:text-gray-400">
+                      <p className="text-xs text-textSecondary mt-1 dark:text-gray-300">
                         {dateLabel}
                       </p>
                     </div>
-                    <span className="text-sm font-semibold text-textPrimary shrink-0 tabular-nums dark:text-gray-200">
-                      {item.cost != null ? formatRON(item.cost) : "—"}
+                    <span className="text-sm font-medium text-textPrimary shrink-0 tabular-nums whitespace-nowrap dark:text-gray-100">
+                      {item.cost != null ? formatRONCompact(item.cost) : "—"}
                     </span>
                     <button
                       type="button"
@@ -241,8 +181,42 @@ export function RightSidebar() {
                 );
               })
           ) : (
-            <li className="text-xs text-textSecondary py-2 dark:text-gray-400">
+            <li className="text-xs text-textSecondary py-2 dark:text-gray-300">
               Nicio plată viitoare. Apasă + pentru a adăuga.
+            </li>
+          )}
+        </ul>
+      </section>
+
+      {/* Recent activities */}
+      <section>
+        <h3 className="text-sm font-medium text-textPrimary mb-0.5 dark:text-white">
+          Recent Activities
+        </h3>
+        <p className="text-xs text-textSecondary mb-3 dark:text-gray-300">
+          {activitiesDate}
+        </p>
+        <ul className="space-y-1">
+          {recentActivities.length ? (
+            recentActivities.map((a) => (
+              <li
+                key={a.label}
+                className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors duration-normal ease-liquid"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.05] dark:bg-white/10" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-textPrimary truncate dark:text-gray-100">
+                    {a.label}
+                  </p>
+                </div>
+                <span className="text-sm font-medium text-textPrimary shrink-0 tabular-nums dark:text-gray-100">
+                  {formatRON(a.amount)}
+                </span>
+              </li>
+            ))
+          ) : (
+            <li className="text-xs text-textSecondary py-2 dark:text-gray-300">
+              No spending data. Add data in Monthly Input.
             </li>
           )}
         </ul>

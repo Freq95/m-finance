@@ -20,7 +20,7 @@ const sizeMap = {
 export function LoadingSpinner({ size = "md", className = "" }: LoadingSpinnerProps) {
   return (
     <Loader2
-      className={`${sizeMap[size]} animate-spin text-accentPrimary ${className}`}
+      className={`${sizeMap[size]} animate-spin text-textSecondary dark:text-gray-300 ${className}`}
     />
   );
 }
