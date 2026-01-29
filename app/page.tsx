@@ -339,7 +339,7 @@ export default function Home() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] p-5 animate-pulse"
+              className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 p-5 animate-pulse"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="h-9 w-9 rounded-xl bg-black/[0.08]" />
@@ -350,7 +350,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] overflow-hidden animate-pulse">
+        <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 overflow-hidden animate-pulse">
           <div className="px-6 pt-6 pb-1">
             <div className="h-5 w-20 bg-black/[0.08] rounded mb-1" />
             <div className="h-8 w-32 bg-black/[0.1] rounded" />
@@ -362,7 +362,7 @@ export default function Home() {
         <section>
           <div className="h-6 w-24 bg-black/[0.08] rounded mb-1" />
           <div className="h-4 w-48 bg-black/[0.06] rounded mb-4" />
-          <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] overflow-hidden">
+          <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 overflow-hidden">
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
@@ -394,14 +394,14 @@ export default function Home() {
         />
       )}
       {/* Period selector: Lună / An + navigate */}
-      <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] p-4">
+      <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium text-textSecondary">Perioadă</span>
+            <span className="text-sm font-medium text-textSecondary dark:text-gray-400">Perioadă</span>
             <div
               role="group"
               aria-label="Vizualizare lună sau an"
-              className="inline-flex rounded-xl border border-black/[0.08] bg-black/[0.03] p-1"
+              className="inline-flex rounded-xl border border-black/[0.08] bg-black/[0.03] p-1 dark:border-white/10 dark:bg-white/10"
             >
               <button
                 type="button"
@@ -409,8 +409,8 @@ export default function Home() {
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                   dashboardView === "month"
-                    ? "bg-white text-textPrimary shadow-sm border border-black/[0.06]"
-                    : "text-textSecondary hover:text-textPrimary"
+                    ? "bg-white text-textPrimary shadow-sm border border-black/[0.06] dark:bg-gray-700 dark:text-gray-100 dark:border-white/10"
+                    : "text-textSecondary hover:text-textPrimary dark:text-gray-400 dark:hover:text-gray-100"
                 )}
               >
                 Lună
@@ -421,8 +421,8 @@ export default function Home() {
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                   dashboardView === "annual"
-                    ? "bg-white text-textPrimary shadow-sm border border-black/[0.06]"
-                    : "text-textSecondary hover:text-textPrimary"
+                    ? "bg-white text-textPrimary shadow-sm border border-black/[0.06] dark:bg-gray-700 dark:text-gray-100 dark:border-white/10"
+                    : "text-textSecondary hover:text-textPrimary dark:text-gray-400 dark:hover:text-gray-100"
                 )}
               >
                 An
@@ -440,13 +440,13 @@ export default function Home() {
                     : monthStringForYear(selectedYear - 1)
                 )
               }
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white/80 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white/80 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-colors dark:border-white/10 dark:bg-gray-700/80 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-gray-100"
               aria-label={dashboardView === "month" ? "Luna anterioară" : "Anul anterior"}
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <div className="min-w-[120px] text-center">
-              <span className="text-base font-semibold text-textPrimary">
+              <span className="text-base font-semibold text-textPrimary dark:text-gray-100">
                 {dashboardView === "month"
                   ? formatMonthShort(selectedMonth)
                   : selectedYear}
@@ -461,7 +461,7 @@ export default function Home() {
                     : monthStringForYear(selectedYear + 1)
                 )
               }
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white/80 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white/80 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-colors dark:border-white/10 dark:bg-gray-700/80 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-gray-100"
               aria-label={dashboardView === "month" ? "Luna următoare" : "Anul următor"}
             >
               <ChevronRight className="h-5 w-5" />
@@ -479,7 +479,7 @@ export default function Home() {
                     : monthStringForYear(new Date().getFullYear())
                 )
               }
-              className="inline-flex items-center gap-1.5 rounded-xl border border-black/[0.08] bg-black/[0.03] px-3 py-1.5 text-sm text-textSecondary hover:bg-black/[0.06] hover:text-textPrimary transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-black/[0.08] bg-black/[0.03] px-3 py-1.5 text-sm text-textSecondary hover:bg-black/[0.06] hover:text-textPrimary transition-colors dark:border-white/10 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/15 dark:hover:text-gray-100"
             >
               <Calendar className="h-4 w-4" />
               {dashboardView === "month" ? "Luna curentă" : "Anul curent"}
@@ -502,7 +502,7 @@ export default function Home() {
           return (
             <div
               key={m.key}
-              className="group relative rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:bg-white/80 transition-all duration-300 ease-out"
+              className="group relative rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_30px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:bg-white/80 transition-all duration-300 ease-out"
             >
               <div className="p-5">
                 <div className="flex items-start justify-between mb-3">
@@ -511,14 +511,14 @@ export default function Home() {
                   </div>
                   <button
                     type="button"
-                    className="rounded-xl p-1.5 text-textMuted hover:bg-black/[0.05] hover:text-textPrimary -mr-1 -mt-1 transition-colors duration-200"
+                    className="rounded-xl p-1.5 text-textMuted hover:bg-black/[0.05] hover:text-textPrimary -mr-1 -mt-1 transition-colors duration-200 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
                     aria-label="More options"
                   >
                     <MoreVertical className="h-4 w-4" />
                   </button>
                 </div>
-                <p className="text-sm text-textSecondary mb-1">{m.label}</p>
-                <p className={`text-xl font-bold ${colorClass}`}>
+                <p className="text-sm text-textSecondary mb-1 dark:text-gray-400">{m.label}</p>
+                <p className={`text-xl font-bold ${colorClass} dark:text-gray-100`}>
                   {formatRON(val)}
                 </p>
               </div>
@@ -528,25 +528,25 @@ export default function Home() {
       </div>
 
       {/* Balance + Chart — frosted */}
-      <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
+      <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden">
         <div className="px-6 pt-6 pb-1">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold text-textPrimary">
+              <h2 className="text-lg font-bold text-textPrimary dark:text-gray-100">
                 Cashflow net
               </h2>
-              <p className="text-xs text-textSecondary mt-0.5">
+              <p className="text-xs text-textSecondary mt-0.5 dark:text-gray-400">
                 {includeInv
                   ? "Venit − cheltuieli − investiții (după investiții)"
                   : "Venit − cheltuieli (înainte de investiții)"}
               </p>
-              <p className="text-2xl lg:text-3xl font-bold text-textPrimary mt-1">
+              <p className="text-2xl lg:text-3xl font-bold text-textPrimary mt-1 dark:text-gray-100">
                 {currentData
                   ? formatRON(currentData.cashflow)
                   : "0,00 RON"}
               </p>
             </div>
-            <p className="text-xs font-medium text-textSecondary uppercase tracking-wide">
+            <p className="text-xs font-medium text-textSecondary uppercase tracking-wide dark:text-gray-400">
               {periodLabel}
             </p>
           </div>
@@ -584,8 +584,8 @@ export default function Home() {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload;
                       return (
-                        <div className="rounded-2xl border border-black/[0.06] bg-white/90 backdrop-blur-md px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] min-w-[180px]">
-                          <p className="text-xs text-textSecondary mb-2">{d.full}</p>
+                        <div className="rounded-2xl border border-black/[0.06] bg-white/90 backdrop-blur-md px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] min-w-[180px] dark:bg-gray-800 dark:border-white/10 dark:shadow-none">
+                          <p className="text-xs text-textSecondary mb-2 dark:text-gray-400">{d.full}</p>
                           <div className="space-y-1 text-sm">
                             <p className="flex justify-between gap-4">
                               <span className="text-textSecondary">Venit:</span>
@@ -662,7 +662,7 @@ export default function Home() {
       </div>
 
       {/* Category bar chart: Venit, Rate, Facturi, Altele, Cheltuieli, Economii & Investiții */}
-      <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden p-6">
+      <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden p-6">
         <h3 className="text-base font-bold text-textPrimary mb-1">Pe categorii</h3>
         <p className="text-xs text-textSecondary mb-4">{periodLabel} · Venit, Rate, Facturi, Altele, Cheltuieli, Economii & Investiții</p>
         {categoryBarData.length > 0 ? (
@@ -685,7 +685,7 @@ export default function Home() {
       {/* Extra charts grid — numbered so you can choose which to keep */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Chart 1: Income vs expenses over time (line) */}
-        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden p-6">
+        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden p-6">
           <h3 className="text-base font-bold text-textPrimary mb-1">
             <span className="text-xs font-normal text-textMuted mr-2">[1]</span>
             Venit vs cheltuieli
@@ -714,7 +714,7 @@ export default function Home() {
         </section>
 
         {/* Chart 2: Spending by category (pie) */}
-        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden p-6">
+        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden p-6">
           <h3 className="text-base font-bold text-textPrimary mb-1">
             <span className="text-xs font-normal text-textMuted mr-2">[2]</span>
             Cheltuieli pe categorii
@@ -747,7 +747,7 @@ export default function Home() {
         </section>
 
         {/* Chart 3: Savings / investment rate over time */}
-        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden p-6">
+        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden p-6">
           <h3 className="text-base font-bold text-textPrimary mb-1">
             <span className="text-xs font-normal text-textMuted mr-2">[3]</span>
             Rata de economii (investiții / venit)
@@ -774,7 +774,7 @@ export default function Home() {
         </section>
 
         {/* Chart 4: Paul vs Codru comparison (grouped bar) */}
-        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden p-6">
+        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden p-6">
           <h3 className="text-base font-bold text-textPrimary mb-1">
             <span className="text-xs font-normal text-textMuted mr-2">[4]</span>
             Paul vs Codru
@@ -799,7 +799,7 @@ export default function Home() {
         </section>
 
         {/* Chart 5: Cashflow net over time (line) */}
-        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden p-6">
+        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden p-6">
           <h3 className="text-base font-bold text-textPrimary mb-1">
             <span className="text-xs font-normal text-textMuted mr-2">[5]</span>
             Cashflow net în timp
@@ -829,7 +829,7 @@ export default function Home() {
         </section>
 
         {/* Chart 6: Top spending categories (horizontal bar) */}
-        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden p-6">
+        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden p-6">
           <h3 className="text-base font-bold text-textPrimary mb-1">
             <span className="text-xs font-normal text-textMuted mr-2">[6]</span>
             Top categorii de cheltuieli
@@ -852,7 +852,7 @@ export default function Home() {
         </section>
 
         {/* Chart 7: Bills vs rest of expenses (stacked bar) */}
-        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden p-6 lg:col-span-2">
+        <section className="rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden p-6 lg:col-span-2">
           <h3 className="text-base font-bold text-textPrimary mb-1">
             <span className="text-xs font-normal text-textMuted mr-2">[7]</span>
             Facturi vs restul cheltuielilor
@@ -883,11 +883,11 @@ export default function Home() {
 
       {/* History — frosted card */}
       <section>
-        <h2 className="text-lg font-bold text-textPrimary">History</h2>
-        <p className="text-sm text-textSecondary mt-0.5">
+        <h2 className="text-lg font-bold text-textPrimary dark:text-gray-100">History</h2>
+        <p className="text-sm text-textSecondary mt-0.5 dark:text-gray-400">
           Transaction of last 6 months
         </p>
-        <div className="mt-4 rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="mt-4 rounded-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] dark:bg-gray-800/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden">
           {last6.length ? (
             <ul className="divide-y divide-black/[0.06]">
               {last6.map((r, idx) => {

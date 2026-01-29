@@ -110,6 +110,38 @@ export function isStorageAvailable(): boolean {
 }
 
 /**
+ * Create a Zustand persist-compatible storage backed by localforage (IndexedDB).
+ * Use this for the finance store so upcomingPayments, theme, settings, etc. persist across reloads.
+ */
+export function createPersistStorage(): {
+  getItem: (name: string) => Promise<string | null>;
+  setItem: (name: string, value: string) => Promise<void>;
+  removeItem: (name: string) => Promise<void>;
+} {
+  try {
+    const storage = getStorage();
+    return {
+      getItem: async (name: string) => {
+        const value = await storage.getItem<string>(name);
+        return value ?? null;
+      },
+      setItem: async (name: string, value: string) => {
+        await storage.setItem(name, value);
+      },
+      removeItem: async (name: string) => {
+        await storage.removeItem(name);
+      },
+    };
+  } catch {
+    return {
+      getItem: async () => null,
+      setItem: async () => {},
+      removeItem: async () => {},
+    };
+  }
+}
+
+/**
  * Export all data as StorageSchema for backup (e.g. JSON download).
  * Loads from storage and returns the full schema.
  */

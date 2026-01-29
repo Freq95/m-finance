@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import type { PersonView } from "@/lib/types";
-import { Search, Calendar, Bell, User, Settings } from "lucide-react";
+import { Search, Calendar, Bell, User, Settings, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -36,16 +36,18 @@ export function Header({
   const pathname = usePathname();
   const selectedPerson = useFinanceStore((s) => s.selectedPerson);
   const setSelectedPerson = useFinanceStore((s) => s.setSelectedPerson);
+  const theme = useFinanceStore((s) => s.theme);
+  const toggleTheme = useFinanceStore((s) => s.toggleTheme);
   const { title, subtitle } = getPageMeta(pathname);
 
   return (
-    <header className="h-16 shrink-0 border-b border-black/[0.06] bg-white/70 backdrop-blur-xl px-6 flex items-center gap-6 supports-[backdrop-filter]:bg-white/50">
+    <header className="h-16 shrink-0 border-b border-black/[0.06] bg-white/70 backdrop-blur-xl px-6 flex items-center gap-6 supports-[backdrop-filter]:bg-white/50 dark:border-white/10 dark:bg-gray-900/80 dark:supports-[backdrop-filter]:bg-gray-900/60">
       <div className="flex min-w-0 flex-1 items-center gap-8">
         <div className="shrink-0">
-          <h1 className="text-[22px] font-bold text-textPrimary tracking-tight truncate">
+          <h1 className="text-[22px] font-bold text-textPrimary tracking-tight truncate dark:text-gray-100">
             {title}
           </h1>
-          <p className="text-sm text-textSecondary truncate mt-0.5">{subtitle}</p>
+          <p className="text-sm text-textSecondary truncate mt-0.5 dark:text-gray-400">{subtitle}</p>
         </div>
         {/* Placeholder: no behavior yet. */}
         <div className="hidden md:block flex-1 max-w-sm">
@@ -54,7 +56,7 @@ export function Header({
             <Input
               type="search"
               placeholder="Search"
-              className="pl-9 h-9 bg-black/[0.04] hover:bg-black/[0.06] border-0 rounded-xl text-sm transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accentPrimary/30 focus-visible:bg-white"
+              className="pl-9 h-9 bg-black/[0.04] hover:bg-black/[0.06] border-0 rounded-xl text-sm transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accentPrimary/30 focus-visible:bg-white dark:bg-white/10 dark:hover:bg-white/15 dark:focus-visible:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
               aria-label="Search"
             />
           </div>
@@ -63,7 +65,7 @@ export function Header({
       <div className="flex shrink-0 items-center gap-2">
         {/* Segmented control: Paul | Codru | Împreună */}
         <div
-          className="flex rounded-xl bg-black/[0.05] p-1 border border-black/[0.06]"
+          className="flex rounded-xl bg-black/[0.05] p-1 border border-black/[0.06] dark:bg-white/10 dark:border-white/10"
           role="group"
           aria-label="Profile view"
         >
@@ -75,8 +77,8 @@ export function Header({
               className={cn(
                 "rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 min-w-[4rem] sm:min-w-0",
                 selectedPerson === opt.value
-                  ? "bg-white text-textPrimary shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-                  : "text-textSecondary hover:text-textPrimary hover:bg-black/[0.03]"
+                  ? "bg-white text-textPrimary shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:bg-gray-700 dark:text-gray-100 dark:shadow-none"
+                  : "text-textSecondary hover:text-textPrimary hover:bg-black/[0.03] dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
               )}
             >
               {opt.label}
@@ -86,24 +88,36 @@ export function Header({
         {/* Placeholder: no behavior yet. */}
         <button
           type="button"
-          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200"
+          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
           aria-label="Calendar"
         >
           <Calendar className="h-5 w-5" />
         </button>
         <button
           type="button"
-          className="relative rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200"
+          className="relative rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" aria-hidden="true" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
+          aria-label={theme === "dark" ? "Comută la modul deschis" : "Comută la modul întunecat"}
+        >
+          {theme === "dark" ? (
+            <Sun className="h-5 w-5" />
+          ) : (
+            <Moon className="h-5 w-5" />
+          )}
         </button>
         {onOpenSettings ? (
           <button
             type="button"
             onClick={onOpenSettings}
-            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200"
+            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
@@ -111,13 +125,13 @@ export function Header({
         ) : (
           <Link
             href="/settings"
-            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200"
+            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
           </Link>
         )}
-        <span className="relative shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-accentPrimary text-white shadow-sm">
+        <span className="relative shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-accentPrimary text-white shadow-sm dark:bg-blue-600">
           <User className="h-4 w-4" />
           <span
             className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-accentPositive shadow-sm"

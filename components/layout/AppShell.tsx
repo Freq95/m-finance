@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { RightSidebar } from "@/components/layout/RightSidebar";
 import { SettingsModal } from "@/components/shared/SettingsModal";
+import { ThemeInjector } from "@/components/shared/ThemeInjector";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -14,7 +15,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="flex min-h-screen bg-gradient-to-b from-background via-[#F2F4F8] to-[#EEF1F5]">
+      <ThemeInjector />
+      <div className="flex min-h-screen bg-gradient-to-b from-background via-[#F2F4F8] to-[#EEF1F5] dark:from-gray-900 dark:via-gray-900 dark:to-gray-950">
         <Sidebar />
         <div className="flex flex-1 flex-col min-w-0 lg:pl-[72px]">
           <Header

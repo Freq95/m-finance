@@ -13,13 +13,14 @@ import type {
   MonthString,
   UpcomingPayment,
 } from "../types";
-import { loadRecords, saveRecords } from "../storage/storage";
+import { loadRecords, saveRecords, createPersistStorage } from "../storage/storage";
 import { createDefaultCategoryAmounts } from "../validation/schemas";
 import { getCurrentMonth } from "../utils/date";
 import { combineCategoryAmounts } from "../calculations/calculations";
 import { logError } from "../utils/errors";
 
 export type DashboardView = "month" | "annual";
+export type Theme = "light" | "dark";
 
 interface FinanceStore {
   // State
@@ -27,6 +28,7 @@ interface FinanceStore {
   selectedPerson: PersonView;
   selectedMonth: MonthString;
   dashboardView: DashboardView;
+  theme: Theme;
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
@@ -52,6 +54,8 @@ interface FinanceStore {
   setSelectedPerson: (person: PersonView) => void;
   setSelectedMonth: (month: MonthString) => void;
   setDashboardView: (view: DashboardView) => void;
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
   updateSettings: (settings: Partial<FinanceStore["settings"]>) => void;
   clearError: () => void;
   addUpcomingPayment: (item: Omit<UpcomingPayment, "id">) => void;
@@ -73,6 +77,7 @@ export const useFinanceStore = create<FinanceStore>()(
       selectedPerson: "me",
       selectedMonth: getCurrentMonth(),
       dashboardView: "month",
+      theme: "light",
       isLoading: false,
       isSaving: false,
       error: null,
@@ -295,6 +300,13 @@ export const useFinanceStore = create<FinanceStore>()(
         set({ dashboardView: view });
       },
 
+      setTheme: (theme) => {
+        set({ theme });
+      },
+      toggleTheme: () => {
+        set((state) => ({ theme: state.theme === "light" ? "dark" : "light" }));
+      },
+
       // Update settings
       updateSettings: (newSettings) => {
         set((state) => ({
@@ -336,15 +348,12 @@ export const useFinanceStore = create<FinanceStore>()(
     }),
     {
       name: "finance-store",
-      storage: createJSONStorage(() => ({
-        getItem: async () => null, // Don't use localStorage, use IndexedDB
-        setItem: async () => {},
-        removeItem: async () => {},
-      })),
+      storage: createJSONStorage(() => createPersistStorage()),
       partialize: (state) => ({
         selectedPerson: state.selectedPerson,
         selectedMonth: state.selectedMonth,
         dashboardView: state.dashboardView,
+        theme: state.theme,
         settings: state.settings,
         upcomingPayments: state.upcomingPayments,
       }),

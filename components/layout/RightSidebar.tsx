@@ -99,7 +99,7 @@ export function RightSidebar() {
     : "—";
 
   return (
-    <aside className="hidden lg:flex w-[320px] shrink-0 flex-col gap-6 border-l border-black/[0.06] bg-white/60 backdrop-blur-xl p-6 overflow-y-auto supports-[backdrop-filter]:bg-white/40">
+    <aside className="hidden lg:flex w-[320px] shrink-0 flex-col gap-6 border-l border-black/[0.06] bg-white/60 backdrop-blur-xl p-6 overflow-y-auto supports-[backdrop-filter]:bg-white/40 dark:border-white/10 dark:bg-gray-900/60 dark:supports-[backdrop-filter]:bg-gray-900/40">
       {/* Credit card — frosted dark with subtle transparency */}
       <div className="relative rounded-2xl bg-gradient-to-br from-[#111827]/95 to-sidebar/95 backdrop-blur-md p-5 text-white shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)] overflow-hidden border border-white/10">
         <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-orange-500/25 to-red-500/15 rounded-full -translate-y-1/2 translate-x-1/2 backdrop-blur-sm" />
@@ -121,30 +121,30 @@ export function RightSidebar() {
 
       {/* Recent activities — top 4 spending categories */}
       <section>
-        <h3 className="text-sm font-semibold text-textPrimary mb-0.5">
+        <h3 className="text-sm font-semibold text-textPrimary mb-0.5 dark:text-gray-100">
           Recent Activities
         </h3>
-        <p className="text-xs text-textSecondary mb-3">{activitiesDate}</p>
+        <p className="text-xs text-textSecondary mb-3 dark:text-gray-400">{activitiesDate}</p>
         <ul className="space-y-1">
           {recentActivities.length ? (
             recentActivities.map((a) => (
               <li
                 key={a.label}
-                className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 hover:bg-black/[0.04] transition-colors duration-200"
+                className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 hover:bg-black/[0.04] transition-colors duration-200 dark:hover:bg-white/[0.06]"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.05]" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.05] dark:bg-white/10" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-textPrimary truncate">
+                  <p className="text-sm font-medium text-textPrimary truncate dark:text-gray-200">
                     {a.label}
                   </p>
                 </div>
-                <span className="text-sm font-semibold text-textPrimary shrink-0 tabular-nums">
+                <span className="text-sm font-semibold text-textPrimary shrink-0 tabular-nums dark:text-gray-200">
                   {formatRON(a.amount)}
                 </span>
               </li>
             ))
           ) : (
-            <li className="text-xs text-textSecondary py-2">
+            <li className="text-xs text-textSecondary py-2 dark:text-gray-400">
               No spending data. Add data in Monthly Input.
             </li>
           )}
@@ -154,7 +154,7 @@ export function RightSidebar() {
       {/* Upcoming payments — CRUD */}
       <section>
         <div className="flex items-center justify-between mb-0.5">
-          <h3 className="text-sm font-semibold text-textPrimary">
+          <h3 className="text-sm font-semibold text-textPrimary dark:text-gray-100">
             Upcoming Payments
           </h3>
           <Button
@@ -168,7 +168,7 @@ export function RightSidebar() {
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-xs text-textSecondary mb-3">
+        <p className="text-xs text-textSecondary mb-3 dark:text-gray-400">
           {upcomingPayments.length ? `${upcomingPayments.length} plăți` : "Nicio plată"}
         </p>
         <ul className="space-y-1">
@@ -197,18 +197,18 @@ export function RightSidebar() {
                         openViewPayment(item);
                       }
                     }}
-                    className="flex items-start gap-3 rounded-xl p-2.5 -mx-1 hover:bg-black/[0.04] transition-colors duration-200 group cursor-pointer"
+                    className="flex items-start gap-3 rounded-xl p-2.5 -mx-1 hover:bg-black/[0.04] transition-colors duration-200 group cursor-pointer dark:hover:bg-white/[0.06]"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.05]">
-                      <Icon className="h-4 w-4 text-textSecondary" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.05] dark:bg-white/10">
+                      <Icon className="h-4 w-4 text-textSecondary dark:text-gray-400" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-textPrimary break-words">
+                      <p className="text-sm font-medium text-textPrimary break-words dark:text-gray-200">
                         {item.title}
                       </p>
-                      <p className="text-xs text-textSecondary mt-0.5">{dateLabel}</p>
+                      <p className="text-xs text-textSecondary mt-0.5 dark:text-gray-400">{dateLabel}</p>
                     </div>
-                    <span className="text-sm font-semibold text-textPrimary shrink-0 tabular-nums">
+                    <span className="text-sm font-semibold text-textPrimary shrink-0 tabular-nums dark:text-gray-200">
                       {item.cost != null ? formatRON(item.cost) : "—"}
                     </span>
                     <button
@@ -217,7 +217,7 @@ export function RightSidebar() {
                         e.stopPropagation();
                         openEditPayment(item);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-black/[0.06] text-textSecondary hover:text-textPrimary transition-opacity shrink-0"
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-black/[0.06] text-textSecondary hover:text-textPrimary transition-opacity shrink-0 dark:hover:bg-white/10 dark:hover:text-gray-200"
                       aria-label="Editează"
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -226,7 +226,7 @@ export function RightSidebar() {
                 );
               })
           ) : (
-            <li className="text-xs text-textSecondary py-2">
+            <li className="text-xs text-textSecondary py-2 dark:text-gray-400">
               Nicio plată viitoare. Apasă + pentru a adăuga.
             </li>
           )}
