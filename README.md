@@ -81,7 +81,7 @@ m-finance-dash/
 - Validation
 
 ### Phase 3: Dashboard Page ✅
-- Visual dashboard with segmented profile selector (Eu | Soția | Împreună)
+- Visual dashboard with segmented profile selector (Paul | Codru | Împreună)
 - 4 metric cards, Balance section, bar chart (Recharts) with grid and tooltips
 - History section with status badges (Completed/Draft)
 - Right sidebar: credit card widget, Recent Activities (top 4 spending categories), Upcoming Payments (placeholder)
@@ -98,6 +98,7 @@ m-finance-dash/
 ## Features
 
 - **Local-only**: All data stored in browser IndexedDB
+- **Known limitation**: Header search, calendar, and notifications are UI-only placeholders (no behavior yet).
 - **No backend**: Fully client-side application
 - **No authentication**: Single-user local storage
 - **Romanian locale**: RON currency formatting, Romanian month names

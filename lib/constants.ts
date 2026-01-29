@@ -67,11 +67,71 @@ export const CATEGORY_SECTIONS: CategorySection[] = [
   },
   {
     title: "Economii & Investiții",
-    items: [{ key: "economii_investitii", label: "Economii / Investiții" }],
+    items: [
+      { key: "economii", label: "Economii" },
+      { key: "investitii", label: "Investiții" },
+    ],
   },
 ];
 
 export const PERSON_LABELS = {
-  me: "Eu",
-  wife: "Soția",
+  me: "Paul",
+  wife: "Codru",
 } as const;
+
+/**
+ * Grouped categories for "Cheltuieli pe categorii" pie chart.
+ * Keys must match CategoryAmounts. Note: "rate" (Rate) is not in any group—
+ * add to Nevoi or as a 5th group if needed.
+ */
+export const EXPENSE_PIE_GROUPS: { id: string; label: string; keys: (keyof CategoryAmounts)[] }[] = [
+  {
+    id: "nevoi",
+    label: "Nevoi",
+    keys: ["alimente", "transport", "apple", "intretinere", "internet", "gaz", "curent", "telefon", "sala"],
+  },
+  {
+    id: "dorinte",
+    label: "Dorințe",
+    keys: ["vacante", "casa", "gadgets", "haine", "beauty", "netflix", "diverse", "cadouri", "tazz"],
+  },
+  {
+    id: "educatie",
+    label: "Educație",
+    keys: ["educatie"],
+  },
+  {
+    id: "sanatate",
+    label: "Sănătate",
+    keys: ["sanatate"],
+  },
+];
+
+/**
+ * Category bars for "Pe categorii" bar chart (Venit, Rate, Facturi, Altele, Cheltuieli, Economii & Investiții).
+ * Cheltuieli bar = only Cheltuieli section (not Altele); Altele is its own bar.
+ */
+export const CATEGORY_BAR_GROUPS: { id: string; label: string; keys: (keyof CategoryAmounts)[] }[] = [
+  { id: "venit", label: "Venit", keys: ["venit", "bonuri", "extra"] },
+  { id: "rate", label: "Rate", keys: ["rate"] },
+  {
+    id: "facturi",
+    label: "Facturi",
+    keys: ["apple", "intretinere", "internet", "gaz", "curent", "telefon", "netflix", "sala"],
+  },
+  {
+    id: "altele",
+    label: "Altele",
+    keys: ["educatie", "sanatate", "beauty", "haine"],
+  },
+  {
+    id: "cheltuieli",
+    label: "Cheltuieli",
+    keys: ["diverse", "transport", "cadouri", "vacante", "casa", "gadgets", "tazz", "alimente"],
+  },
+  {
+    id: "economii_investitii",
+    label: "Economii & Investiții",
+    keys: ["economii", "investitii"],
+  },
+];

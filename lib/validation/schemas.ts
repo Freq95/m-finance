@@ -42,8 +42,9 @@ export const CategoryAmountsSchema = z.object({
   tazz: z.number().min(0),
   alimente: z.number().min(0),
 
-  // Investments
-  economii_investitii: z.number().min(0),
+  // Savings & Investments
+  economii: z.number().min(0),
+  investitii: z.number().min(0),
 });
 
 export const MonthRecordSchema = z.object({
@@ -90,6 +91,7 @@ export function createDefaultCategoryAmounts(): z.infer<typeof CategoryAmountsSc
     gadgets: 0,
     tazz: 0,
     alimente: 0,
-    economii_investitii: 0,
+    economii: 0,
+    investitii: 0,
   };
 }

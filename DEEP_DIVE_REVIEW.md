@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary
 
-The **Finance Dashboard** is a local-only, client-side Next.js 14 app for tracking household finances (Eu / Soția / Împreună) with Romanian locale (RON), IndexedDB persistence, and a three-column layout aligned to the design target. The codebase is well-structured, typed, and validated. **One major functional gap**: the dashboard page ignores the profile selector and always shows combined data; the selector only affects the right sidebar. Otherwise the platform is feature-complete for the documented scope, with solid error handling, validation, and UX.
+The **Finance Dashboard** is a local-only, client-side Next.js 14 app for tracking household finances (Paul / Codru / Împreună) with Romanian locale (RON), IndexedDB persistence, and a three-column layout aligned to the design target. The codebase is well-structured, typed, and validated. **One major functional gap**: the dashboard page ignores the profile selector and always shows combined data; the selector only affects the right sidebar. Otherwise the platform is feature-complete for the documented scope, with solid error handling, validation, and UX.
 
 ---
 
@@ -15,7 +15,7 @@ The **Finance Dashboard** is a local-only, client-side Next.js 14 app for tracki
 
 ### 2.1 Purpose & Constraints
 
-- **Purpose**: Track monthly income, bills, expenses, and investments for two people (“Eu”, “Soția”) with a combined view (“Împreună”).
+- **Purpose**: Track monthly income, bills, expenses, and investments for two people (“Paul”, “Codru”) with a combined view (“Împreună”).
 - **Constraints**: No backend, no auth, single-user; all data in browser (IndexedDB with localStorage fallback).
 - **Locale**: Romanian (RON, Romanian month names, Romanian labels).
 
@@ -49,7 +49,7 @@ The **Finance Dashboard** is a local-only, client-side Next.js 14 app for tracki
 | **Monthly Input** | ✅ | `app/monthly-input/page.tsx`, `MonthlyInputClient.tsx` |
 | Month picker (dialog + calendar) | ✅ | `MonthPicker.tsx`, `calendar.tsx` (month-only) |
 | Input table (sections: Venit, Rate, Facturi, Altele, Cheltuieli, Economii) | ✅ | `CATEGORY_SECTIONS`, `MonthlyInputClient` |
-| Eu / Soția columns | ✅ | Two `CurrencyInput` columns |
+| Paul / Codru columns | ✅ | Two `CurrencyInput` columns |
 | Autosave (debounced 1s) | ✅ | `useDebouncedCallback` + `updateMonthFull` |
 | Save (mark as saved) | ✅ | `saveMonth` |
 | Duplicate previous month | ✅ | Store + confirm dialog |
@@ -80,7 +80,7 @@ The **Finance Dashboard** is a local-only, client-side Next.js 14 app for tracki
 
 ### 3.2 Profile Selector — Critical Gap
 
-- **Intended behavior (from plan)**: Dashboard metrics, balance, chart, and history should respect **Eu | Soția | Împreună** (show data for selected person or combined).
+- **Intended behavior (from plan)**: Dashboard metrics, balance, chart, and history should respect **Paul | Codru | Împreună** (show data for selected person or combined).
 - **Actual behavior**: The dashboard page **never reads `selectedPerson`**. It always uses `getCombinedData(month)` for:
   - Metric cards
   - Balance
@@ -161,7 +161,7 @@ Design is clear; the only behavioral issue is that the dashboard does not use `s
 - **History**: Last 6 months from store; each row uses `getCombinedData(r.month)` for cashflow — always combined.
 - **RightSidebar**: Uses `selectedPerson` for card holder label and `getCombinedData(latestMonth)` for Recent Activities (so activities are always combined; only label changes). Upcoming Payments are static.
 
-So: **profile selector must be wired into dashboard page** so that metrics, chart, and history respect Eu / Soția / Împreună.
+So: **profile selector must be wired into dashboard page** so that metrics, chart, and history respect Paul / Codru / Împreună.
 
 ---
 

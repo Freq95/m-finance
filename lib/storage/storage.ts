@@ -4,13 +4,14 @@
  */
 
 import localforage from "localforage";
-import type { StorageSchema, MonthRecord } from "../types";
+import type { StorageSchema } from "../types";
 import { StorageSchema as StorageSchemaZod } from "../validation/schemas";
+import { migrateData } from "./migrations";
 import { StorageError, ValidationError, logError } from "../utils/errors";
 import { getBestStorageType } from "../utils/browser";
 
 const STORAGE_KEY = "finance-dashboard-data";
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 2;
 
 // Configure localforage
 localforage.config({
@@ -50,14 +51,9 @@ export async function loadRecords(): Promise<MonthRecord[]> {
       return [];
     }
 
-    // Validate schema
-    const validationResult = StorageSchemaZod.safeParse(data);
-    if (!validationResult.success) {
-      logError(validationResult.error, "Storage validation failed");
-      throw new ValidationError("Invalid data format in storage");
-    }
-
-    return validationResult.data.data;
+    // Migrate if older version, then use migrated data
+    const migrated = migrateData(data);
+    return migrated.data;
   } catch (error) {
     logError(error, "loadRecords");
     if (error instanceof StorageError || error instanceof ValidationError) {
@@ -78,13 +74,11 @@ export async function saveRecords(records: MonthRecord[]): Promise<void> {
       data: records,
     };
 
-    // Validate before saving
     const validationResult = StorageSchemaZod.safeParse(schema);
     if (!validationResult.success) {
       logError(validationResult.error, "Save validation failed");
       throw new ValidationError("Invalid data format");
     }
-
     await storage.setItem(STORAGE_KEY, schema);
   } catch (error) {
     logError(error, "saveRecords");
@@ -113,4 +107,16 @@ export async function clearStorage(): Promise<void> {
  */
 export function isStorageAvailable(): boolean {
   return getBestStorageType() !== "none";
+}
+
+/**
+ * Export all data as StorageSchema for backup (e.g. JSON download).
+ * Loads from storage and returns the full schema.
+ */
+export async function exportData(): Promise<StorageSchema> {
+  const records = await loadRecords();
+  return {
+    version: CURRENT_VERSION,
+    data: records,
+  };
 }

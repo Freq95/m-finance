@@ -45,6 +45,7 @@ export function MonthlyInputClient() {
   const error = useFinanceStore((s) => s.error);
   const selectedMonth = useFinanceStore((s) => s.selectedMonth);
   const setSelectedMonth = useFinanceStore((s) => s.setSelectedMonth);
+  const records = useFinanceStore((s) => s.records);
   const getCurrentMonthRecord = useFinanceStore((s) => s.getCurrentMonthRecord);
   const updateMonthFull = useFinanceStore((s) => s.updateMonthFull);
   const saveMonth = useFinanceStore((s) => s.saveMonth);
@@ -133,9 +134,7 @@ export function MonthlyInputClient() {
   };
 
   const record = getCurrentMonthRecord();
-  const combined = record
-    ? combineCategoryAmounts(record.people.me, record.people.wife)
-    : null;
+  const combinedForFooter = combineCategoryAmounts(formData.me, formData.wife);
   const includeInv = settings.includeInvestmentsInNetCashflow;
 
   if (isLoading) {
@@ -242,53 +241,47 @@ export function MonthlyInputClient() {
 
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-black/[0.06] bg-white/70 backdrop-blur-xl px-6 py-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] lg:pl-[72px] supports-[backdrop-filter]:bg-white/60">
         <div className="mx-auto max-w-4xl">
-          <div className="text-h3 mb-2">Totaluri (Eu + Soția)</div>
-          {combined ? (
-            <div className="flex flex-wrap gap-6 text-small">
-              <span>
-                Venit total:{" "}
-                <strong className="text-textPrimary">
-                  {formatRON(calculateIncomeTotal(combined))}
-                </strong>
-              </span>
-              <span>
-                Total facturi:{" "}
-                <strong className="text-textPrimary">
-                  {formatRON(calculateBillsTotal(combined))}
-                </strong>
-              </span>
-              <span>
-                Cheltuieli totale:{" "}
-                <strong className="text-textPrimary">
-                  {formatRON(calculateExpensesTotal(combined))}
-                </strong>
-              </span>
-              <span>
-                Economii / Investiții:{" "}
-                <strong className="text-textPrimary">
-                  {formatRON(calculateInvestmentsTotal(combined))}
-                </strong>
-              </span>
-              <span>
-                Cashflow net:{" "}
-                <strong
-                  className={
-                    calculateNetCashflow(combined, includeInv) >= 0
-                      ? "text-accentPositive"
-                      : "text-accentNegative"
-                  }
-                >
-                  {formatRON(
-                    calculateNetCashflow(combined, includeInv)
-                  )}
-                </strong>
-              </span>
-            </div>
-          ) : (
-            <p className="text-textMuted">
-              Completează câmpurile pentru a vedea totalurile.
-            </p>
-          )}
+          <div className="text-h3 mb-2">Totaluri (Paul + Codru)</div>
+          <div className="flex flex-wrap gap-6 text-small">
+            <span>
+              Venit total:{" "}
+              <strong className="text-textPrimary">
+                {formatRON(calculateIncomeTotal(combinedForFooter))}
+              </strong>
+            </span>
+            <span>
+              Total facturi:{" "}
+              <strong className="text-textPrimary">
+                {formatRON(calculateBillsTotal(combinedForFooter))}
+              </strong>
+            </span>
+            <span>
+              Cheltuieli totale:{" "}
+              <strong className="text-textPrimary">
+                {formatRON(calculateExpensesTotal(combinedForFooter))}
+              </strong>
+            </span>
+            <span>
+              Economii / Investiții:{" "}
+              <strong className="text-textPrimary">
+                {formatRON(calculateInvestmentsTotal(combinedForFooter))}
+              </strong>
+            </span>
+            <span>
+              Cashflow net:{" "}
+              <strong
+                className={
+                  calculateNetCashflow(combinedForFooter, includeInv) >= 0
+                    ? "text-accentPositive"
+                    : "text-accentNegative"
+                }
+              >
+                {formatRON(
+                  calculateNetCashflow(combinedForFooter, includeInv)
+                )}
+              </strong>
+            </span>
+          </div>
         </div>
       </div>
 

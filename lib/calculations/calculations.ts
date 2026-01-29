@@ -51,10 +51,10 @@ export function calculateExpensesTotal(data: CategoryAmounts): number {
 }
 
 /**
- * Calculate investments total
+ * Calculate savings + investments total (Economii & Investiții)
  */
 export function calculateInvestmentsTotal(data: CategoryAmounts): number {
-  return data.economii_investitii;
+  return data.economii + data.investitii;
 }
 
 /**
@@ -116,6 +116,73 @@ export function combineCategoryAmounts(
     gadgets: me.gadgets + wife.gadgets,
     tazz: me.tazz + wife.tazz,
     alimente: me.alimente + wife.alimente,
-    economii_investitii: me.economii_investitii + wife.economii_investitii,
+    economii: me.economii + wife.economii,
+    investitii: me.investitii + wife.investitii,
   };
+}
+
+/**
+ * Sum multiple CategoryAmounts (e.g. for annual aggregation)
+ */
+export function sumCategoryAmounts(items: CategoryAmounts[]): CategoryAmounts {
+  if (items.length === 0) {
+    return {
+      venit: 0,
+      bonuri: 0,
+      extra: 0,
+      rate: 0,
+      apple: 0,
+      intretinere: 0,
+      internet: 0,
+      gaz: 0,
+      curent: 0,
+      telefon: 0,
+      netflix: 0,
+      sala: 0,
+      educatie: 0,
+      sanatate: 0,
+      beauty: 0,
+      haine: 0,
+      diverse: 0,
+      transport: 0,
+      cadouri: 0,
+      vacante: 0,
+      casa: 0,
+      gadgets: 0,
+      tazz: 0,
+      alimente: 0,
+      economii: 0,
+      investitii: 0,
+    };
+  }
+  return items.reduce((acc, curr) => {
+    return {
+      venit: acc.venit + curr.venit,
+      bonuri: acc.bonuri + curr.bonuri,
+      extra: acc.extra + curr.extra,
+      rate: acc.rate + curr.rate,
+      apple: acc.apple + curr.apple,
+      intretinere: acc.intretinere + curr.intretinere,
+      internet: acc.internet + curr.internet,
+      gaz: acc.gaz + curr.gaz,
+      curent: acc.curent + curr.curent,
+      telefon: acc.telefon + curr.telefon,
+      netflix: acc.netflix + curr.netflix,
+      sala: acc.sala + curr.sala,
+      educatie: acc.educatie + curr.educatie,
+      sanatate: acc.sanatate + curr.sanatate,
+      beauty: acc.beauty + curr.beauty,
+      haine: acc.haine + curr.haine,
+      diverse: acc.diverse + curr.diverse,
+      transport: acc.transport + curr.transport,
+      cadouri: acc.cadouri + curr.cadouri,
+      vacante: acc.vacante + curr.vacante,
+      casa: acc.casa + curr.casa,
+      gadgets: acc.gadgets + curr.gadgets,
+      tazz: acc.tazz + curr.tazz,
+      alimente: acc.alimente + curr.alimente,
+      economii: acc.economii + curr.economii,
+      investitii: acc.investitii + curr.investitii,
+    };
+  });
 }

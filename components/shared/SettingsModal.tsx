@@ -26,8 +26,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         onClose={() => onOpenChange(false)}
       >
         <DialogHeader>
-          <DialogTitle className="text-[#111827]">Settings</DialogTitle>
-          <DialogDescription className="text-[#6B7280]">
+          <DialogTitle className="text-textPrimary">Settings</DialogTitle>
+          <DialogDescription className="text-textSecondary">
             Configure how net cashflow is calculated.
           </DialogDescription>
         </DialogHeader>
@@ -35,11 +35,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           <label
             className={cn(
               "flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-black/[0.06] bg-black/[0.02] px-4 py-3 transition-colors hover:bg-black/[0.04]",
-              settings.includeInvestmentsInNetCashflow && "border-[#3B82F6]/30 bg-[#3B82F6]/5"
+              settings.includeInvestmentsInNetCashflow && "border-accentPrimary/30 bg-accentPrimary/5"
             )}
             htmlFor="include-investments"
           >
-            <span className="text-sm font-medium text-[#111827]">
+            <span className="text-sm font-medium text-textPrimary">
               Include investments in net cashflow
             </span>
             <input
@@ -51,10 +51,10 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   includeInvestmentsInNetCashflow: e.target.checked,
                 })
               }
-              className="h-4 w-4 rounded border-[#E5E7EB] text-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/30"
+              className="h-4 w-4 rounded border-border text-accentPrimary focus:ring-2 focus:ring-accentPrimary/30"
             />
           </label>
-          <p className="mt-2 text-xs text-[#6B7280]">
+          <p className="mt-2 text-xs text-textSecondary">
             When on, net cashflow = income − expenses − investments. When off,
             investments are excluded from the calculation.
           </p>

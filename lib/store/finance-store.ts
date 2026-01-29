@@ -11,6 +11,7 @@ import type {
   PersonView,
   CategoryAmounts,
   MonthString,
+  UpcomingPayment,
 } from "../types";
 import { loadRecords, saveRecords } from "../storage/storage";
 import { createDefaultCategoryAmounts } from "../validation/schemas";
@@ -18,17 +19,21 @@ import { getCurrentMonth } from "../utils/date";
 import { combineCategoryAmounts } from "../calculations/calculations";
 import { logError } from "../utils/errors";
 
+export type DashboardView = "month" | "annual";
+
 interface FinanceStore {
   // State
   records: MonthRecord[];
   selectedPerson: PersonView;
   selectedMonth: MonthString;
+  dashboardView: DashboardView;
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
   settings: {
     includeInvestmentsInNetCashflow: boolean;
   };
+  upcomingPayments: UpcomingPayment[];
 
   // Actions
   loadRecords: () => Promise<void>;
@@ -46,8 +51,12 @@ interface FinanceStore {
   resetMonth: (month: MonthString) => void;
   setSelectedPerson: (person: PersonView) => void;
   setSelectedMonth: (month: MonthString) => void;
+  setDashboardView: (view: DashboardView) => void;
   updateSettings: (settings: Partial<FinanceStore["settings"]>) => void;
   clearError: () => void;
+  addUpcomingPayment: (item: Omit<UpcomingPayment, "id">) => void;
+  updateUpcomingPayment: (id: string, item: Partial<Omit<UpcomingPayment, "id">>) => void;
+  removeUpcomingPayment: (id: string) => void;
 
   // Selectors (computed)
   getCurrentMonthRecord: () => MonthRecord | null;
@@ -63,12 +72,14 @@ export const useFinanceStore = create<FinanceStore>()(
       records: [],
       selectedPerson: "me",
       selectedMonth: getCurrentMonth(),
+      dashboardView: "month",
       isLoading: false,
       isSaving: false,
       error: null,
       settings: {
         includeInvestmentsInNetCashflow: true,
       },
+      upcomingPayments: [],
 
       // Load records from IndexedDB
       loadRecords: async () => {
@@ -187,6 +198,27 @@ export const useFinanceStore = create<FinanceStore>()(
 
       clearError: () => set({ error: null }),
 
+      addUpcomingPayment: (item) => {
+        const id = typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `up-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        set((state) => ({
+          upcomingPayments: [...state.upcomingPayments, { ...item, id }],
+        }));
+      },
+      updateUpcomingPayment: (id, item) => {
+        set((state) => ({
+          upcomingPayments: state.upcomingPayments.map((p) =>
+            p.id === id ? { ...p, ...item } : p
+          ),
+        }));
+      },
+      removeUpcomingPayment: (id) => {
+        set((state) => ({
+          upcomingPayments: state.upcomingPayments.filter((p) => p.id !== id),
+        }));
+      },
+
       // Duplicate month data
       duplicateMonth: (fromMonth, toMonth) => {
         const state = get();
@@ -258,6 +290,11 @@ export const useFinanceStore = create<FinanceStore>()(
         set({ selectedMonth: month });
       },
 
+      // Set dashboard view (month vs annual)
+      setDashboardView: (view) => {
+        set({ dashboardView: view });
+      },
+
       // Update settings
       updateSettings: (newSettings) => {
         set((state) => ({
@@ -307,7 +344,9 @@ export const useFinanceStore = create<FinanceStore>()(
       partialize: (state) => ({
         selectedPerson: state.selectedPerson,
         selectedMonth: state.selectedMonth,
+        dashboardView: state.dashboardView,
         settings: state.settings,
+        upcomingPayments: state.upcomingPayments,
       }),
     }
   )

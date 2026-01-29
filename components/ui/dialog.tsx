@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +12,12 @@ interface DialogProps {
 }
 
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   React.useEffect(() => {
     if (!open) return;
     const handleEscape = (e: KeyboardEvent) => {
@@ -20,11 +27,11 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [open, onOpenChange]);
 
-  if (!open) return null;
+  if (!open || !mounted || typeof document === "undefined") return null;
 
-  return (
+  const content = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       onClick={() => onOpenChange?.(false)}
       role="dialog"
       aria-modal="true"
@@ -34,13 +41,15 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
         aria-hidden="true"
       />
       <div
-        className="relative z-50 max-h-[90vh] overflow-auto"
+        className="relative z-[100] max-h-[90vh] overflow-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {children}
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 };
 
 const DialogContent = React.forwardRef<

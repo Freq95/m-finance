@@ -7,7 +7,7 @@ import type { StorageSchema, MonthRecord } from "../types";
 import { StorageSchema as StorageSchemaZod } from "../validation/schemas";
 import { logError } from "../utils/errors";
 
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 2;
 
 /**
  * Migrate data from an older version to the current version
@@ -23,14 +23,19 @@ export function migrateData(data: unknown): StorageSchema {
     if (typeof data === "object" && data !== null) {
       const versioned = data as { version?: number; [key: string]: unknown };
 
-      // Version 1 (current)
-      if (versioned.version === 1) {
-        return migrateV1ToV1(versioned);
+      // Version 2 (current)
+      if (versioned.version === 2) {
+        return migrateV2ToV2(versioned);
       }
 
-      // Legacy format (no version) - treat as v0
+      // Version 1 (economii_investitii) -> v2 (economii + investitii)
+      if (versioned.version === 1) {
+        return migrateV1ToV2(versioned);
+      }
+
+      // Legacy format (no version) - treat as v0, then v1->v2
       if (!versioned.version) {
-        return migrateV0ToV1(versioned);
+        return migrateV1ToV2(migrateV0ToV1(versioned));
       }
     }
 
@@ -60,43 +65,68 @@ function isValidCurrentSchema(data: unknown): boolean {
 /**
  * Migrate from v0 (legacy) to v1
  */
-function migrateV0ToV1(data: { [key: string]: unknown }): StorageSchema {
-  // If data has a 'data' array, try to use it
+/** Returns v1-shaped schema (version: 1) for feeding into migrateV1ToV2 */
+function migrateV0ToV1(data: { [key: string]: unknown }): { version: number; data: unknown[] } {
   if (Array.isArray(data.data)) {
-    return {
-      version: CURRENT_VERSION,
-      data: data.data as MonthRecord[],
-    };
+    return { version: 1, data: data.data };
   }
-
-  // If data is directly an array, wrap it
   if (Array.isArray(data)) {
-    return {
-      version: CURRENT_VERSION,
-      data: data as MonthRecord[],
-    };
+    return { version: 1, data: data as unknown[] };
   }
-
-  // Otherwise, return empty
-  return {
-    version: CURRENT_VERSION,
-    data: [],
-  };
+  return { version: 1, data: [] };
 }
 
 /**
- * Migrate from v1 to v1 (validation/cleanup)
+ * Migrate from v1 (economii_investitii) to v2 (economii + investitii)
  */
-function migrateV1ToV1(data: { version?: number; data?: unknown }): StorageSchema {
+function migrateV1ToV2(data: { version?: number; data?: unknown }): StorageSchema {
+  if (!Array.isArray(data.data)) {
+    return { version: CURRENT_VERSION, data: [] };
+  }
+  const validRecords: MonthRecord[] = [];
+  for (const record of data.data as unknown[]) {
+    const r = record as {
+      month: string;
+      people: { me: Record<string, unknown>; wife: Record<string, unknown> };
+      meta: { updatedAt: string; isSaved: boolean };
+    };
+    if (!r?.people?.me || !r?.people?.wife) continue;
+    const oldVal = (key: string) => (person: Record<string, unknown>) =>
+      (typeof (person[key] as number) === "number" ? (person[key] as number) : 0) as number;
+    const migratePerson = (p: Record<string, unknown>) => {
+      const old = oldVal("economii_investitii")(p);
+      const { economii_investitii: _removed, ...rest } = p as Record<string, unknown> & { economii_investitii?: number };
+      return {
+        ...rest,
+        economii: (rest.economii as number) ?? old,
+        investitii: (rest.investitii as number) ?? 0,
+      };
+    };
+    const me = migratePerson(r.people.me) as MonthRecord["people"]["me"];
+    const wife = migratePerson(r.people.wife) as MonthRecord["people"]["wife"];
+    const result = StorageSchemaZod.shape.data.element.safeParse({
+      month: r.month,
+      people: { me, wife },
+      meta: r.meta,
+    });
+    if (result.success) validRecords.push(result.data);
+    else logError(`Invalid record after migration: ${r.month}`, "migrateV1ToV2");
+  }
+  return { version: CURRENT_VERSION, data: validRecords };
+}
+
+/**
+ * Migrate from v2 to v2 (validation/cleanup)
+ */
+function migrateV2ToV2(data: { version?: number; data?: unknown }): StorageSchema {
   if (Array.isArray(data.data)) {
-    // Validate each record
     const validRecords: MonthRecord[] = [];
     for (const record of data.data) {
       const result = StorageSchemaZod.shape.data.element.safeParse(record);
       if (result.success) {
         validRecords.push(result.data);
       } else {
-        logError(`Invalid record skipped: ${JSON.stringify(record)}`, "migrateV1ToV1");
+        logError(`Invalid record skipped: ${JSON.stringify(record)}`, "migrateV2ToV2");
       }
     }
     return {
@@ -104,11 +134,7 @@ function migrateV1ToV1(data: { version?: number; data?: unknown }): StorageSchem
       data: validRecords,
     };
   }
-
-  return {
-    version: CURRENT_VERSION,
-    data: [],
-  };
+  return { version: CURRENT_VERSION, data: [] };
 }
 
 /**

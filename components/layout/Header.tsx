@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
 const personOptions: { value: PersonView; label: string }[] = [
-  { value: "me", label: "Eu" },
-  { value: "wife", label: "Soția" },
+  { value: "me", label: "Paul" },
+  { value: "wife", label: "Codru" },
   { value: "combined", label: "Împreună" },
 ];
 
@@ -42,25 +42,26 @@ export function Header({
     <header className="h-16 shrink-0 border-b border-black/[0.06] bg-white/70 backdrop-blur-xl px-6 flex items-center gap-6 supports-[backdrop-filter]:bg-white/50">
       <div className="flex min-w-0 flex-1 items-center gap-8">
         <div className="shrink-0">
-          <h1 className="text-[22px] font-bold text-[#111827] tracking-tight truncate">
+          <h1 className="text-[22px] font-bold text-textPrimary tracking-tight truncate">
             {title}
           </h1>
-          <p className="text-sm text-[#6B7280] truncate mt-0.5">{subtitle}</p>
+          <p className="text-sm text-textSecondary truncate mt-0.5">{subtitle}</p>
         </div>
+        {/* Placeholder: no behavior yet. */}
         <div className="hidden md:block flex-1 max-w-sm">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-textMuted" />
             <Input
               type="search"
               placeholder="Search"
-              className="pl-9 h-9 bg-black/[0.04] hover:bg-black/[0.06] border-0 rounded-xl text-sm transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#3B82F6]/30 focus-visible:bg-white"
+              className="pl-9 h-9 bg-black/[0.04] hover:bg-black/[0.06] border-0 rounded-xl text-sm transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accentPrimary/30 focus-visible:bg-white"
               aria-label="Search"
             />
           </div>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {/* Segmented control: Eu | Soția | Împreună */}
+        {/* Segmented control: Paul | Codru | Împreună */}
         <div
           className="flex rounded-xl bg-black/[0.05] p-1 border border-black/[0.06]"
           role="group"
@@ -74,24 +75,25 @@ export function Header({
               className={cn(
                 "rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 min-w-[4rem] sm:min-w-0",
                 selectedPerson === opt.value
-                  ? "bg-white text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-                  : "text-[#6B7280] hover:text-[#111827] hover:bg-black/[0.03]"
+                  ? "bg-white text-textPrimary shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                  : "text-textSecondary hover:text-textPrimary hover:bg-black/[0.03]"
               )}
             >
               {opt.label}
             </button>
           ))}
         </div>
+        {/* Placeholder: no behavior yet. */}
         <button
           type="button"
-          className="rounded-xl p-2.5 text-[#6B7280] hover:bg-black/[0.05] hover:text-[#111827] transition-all duration-200"
+          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200"
           aria-label="Calendar"
         >
           <Calendar className="h-5 w-5" />
         </button>
         <button
           type="button"
-          className="relative rounded-xl p-2.5 text-[#6B7280] hover:bg-black/[0.05] hover:text-[#111827] transition-all duration-200"
+          className="relative rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
@@ -101,7 +103,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="rounded-xl p-2.5 text-[#6B7280] hover:bg-black/[0.05] hover:text-[#111827] transition-all duration-200"
+            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
@@ -109,16 +111,16 @@ export function Header({
         ) : (
           <Link
             href="/settings"
-            className="rounded-xl p-2.5 text-[#6B7280] hover:bg-black/[0.05] hover:text-[#111827] transition-all duration-200"
+            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-200"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
           </Link>
         )}
-        <span className="relative shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-[#3B82F6] text-white shadow-sm">
+        <span className="relative shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-accentPrimary text-white shadow-sm">
           <User className="h-4 w-4" />
           <span
-            className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#22c55e] shadow-sm"
+            className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-accentPositive shadow-sm"
             aria-hidden="true"
           />
         </span>

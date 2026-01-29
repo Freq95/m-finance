@@ -43,8 +43,9 @@ export type CategoryAmounts = {
   tazz: number;
   alimente: number;
 
-  // Investments
-  economii_investitii: number;
+  // Savings & Investments (separate inputs, displayed as "Economii & Investiții")
+  economii: number;
+  investitii: number;
 };
 
 export type MonthRecord = {
@@ -62,4 +63,25 @@ export type MonthRecord = {
 export type StorageSchema = {
   version: number;
   data: MonthRecord[];
+};
+
+/** Icon key for Upcoming Payment (must match keys in UPCOMING_PAYMENT_ICONS) */
+export type UpcomingPaymentIconId =
+  | "Home"
+  | "Car"
+  | "CreditCard"
+  | "Receipt"
+  | "Wallet"
+  | "Calendar"
+  | "Heart"
+  | "Utensils"
+  | "ShoppingCart"
+  | "Zap";
+
+export type UpcomingPayment = {
+  id: string;
+  icon: UpcomingPaymentIconId;
+  title: string;
+  date: string; // YYYY-MM-DD
+  cost: number | null; // null if unknown
 };

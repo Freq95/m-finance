@@ -14,7 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="flex min-h-screen bg-gradient-to-b from-[#F5F7FA] via-[#F2F4F8] to-[#EEF1F5]">
+      <div className="flex min-h-screen bg-gradient-to-b from-background via-[#F2F4F8] to-[#EEF1F5]">
         <Sidebar />
         <div className="flex flex-1 flex-col min-w-0 lg:pl-[72px]">
           <Header

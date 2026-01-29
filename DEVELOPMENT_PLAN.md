@@ -513,9 +513,9 @@ export const ROMANIAN_MONTHS = [
 ## 📐 Core Requirements
 
 ### User Profiles
-- **"Eu"**: Personal finance data
-- **"Soția"**: Partner's finance data  
-- **"Împreună"**: Combined view (Eu + Soția), READ-ONLY, auto-updates
+- **"Paul"**: Personal finance data
+- **"Codru"**: Partner's finance data  
+- **"Împreună"**: Combined view (Paul + Codru), READ-ONLY, auto-updates
 
 ### Data Model
 
@@ -634,11 +634,11 @@ type MonthRecord = {
   - "Reset month" (clears current month)
 - **Main Input Table**:
   - Rows grouped by sections: Income, Bills, Rates, Other, Spending, Investments
-  - Two columns: "Eu" and "Soția"
+  - Two columns: "Paul" and "Codru"
   - Numeric inputs with RON formatting on blur; allow typing raw numbers
   - Investments section has note: "Investițiile nu intră în cheltuieli totale."
 - **Sticky Totals Footer**:
-  - Show totals for Eu, Soția, Împreună:
+  - Show totals for Paul, Codru, Împreună:
     - incomeTotal, billsTotal, expensesTotal, investmentsTotal, profitLoss, netCashflow
 - **Status Display**:
   - "Last saved at HH:MM" (from meta.updatedAt)
@@ -654,7 +654,7 @@ type MonthRecord = {
 - Explicit Save marks record as "Saved" (flag), but autosave still updates updatedAt
 
 ### Duplicate Previous Month
-- Copy most recent existing MonthRecord values into currently selected month for both Eu and Soția
+- Copy most recent existing MonthRecord values into currently selected month for both Paul and Codru
 - If current month has data, confirm overwrite via dialog
 
 ### Validation & UX
@@ -730,7 +730,7 @@ type MonthRecord = {
 2. Implement month selector (display "Ian 2026", store "YYYY-MM")
    - Use shadcn/ui Calendar component (month-only mode)
 3. Build input table with sections (Income, Bills, Rates, Other, Spending, Investments)
-4. Implement two-column layout (Eu, Soția)
+4. Implement two-column layout (Paul, Codru)
 5. Create CurrencyInput component with RON formatting
 6. Implement autosave (debounced, 1000ms) using use-debounce
 7. Add "Save", "Duplicate previous month", "Reset month" buttons
@@ -758,7 +758,7 @@ type MonthRecord = {
 
 **Tasks**:
 1. Create Dashboard page component
-2. Implement profile selector ("Eu" | "Soția" | "Împreună") in header
+2. Implement profile selector ("Paul" | "Codru" | "Împreună") in header
    - Segmented control style (pill-shaped buttons)
 3. Build 4 metric cards row (Venit total, Total facturi, Cheltuieli totale, Cashflow net)
    - Match design specs (icon, label, value, hover states)
@@ -923,7 +923,7 @@ m-finance-dash/
 - [ ] Create page component
 - [ ] Implement month selector (Calendar component)
 - [ ] Build input table with sections
-- [ ] Add two-column layout (Eu, Soția)
+- [ ] Add two-column layout (Paul, Codru)
 - [ ] Create CurrencyInput component
 - [ ] Implement currency input formatting
 - [ ] Add autosave functionality (debounced, 1000ms)
@@ -985,7 +985,7 @@ m-finance-dash/
 - Always use user's local timezone consistently
 
 ### Data Behavior
-- **Combined View**: Always read-only, computed on-the-fly from Eu + Soția
+- **Combined View**: Always read-only, computed on-the-fly from Paul + Codru
 - **Autosave**: Debounced 1000ms, updates `updatedAt` but doesn't set `isSaved` flag
 - **Explicit Save**: Sets `isSaved: true` flag, used to show "Saved" vs "Draft" status
 - **Empty Input**: Defaults to 0

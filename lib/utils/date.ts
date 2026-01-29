@@ -73,6 +73,57 @@ export function getNextMonth(monthString: MonthString): MonthString {
 }
 
 /**
+ * Get last N calendar months (including current), newest first.
+ * Example: if today is Jan 2026, getLast12CalendarMonths() returns
+ * ["2026-01", "2025-12", "2025-11", ..., "2025-02"].
+ */
+export function getLast12CalendarMonths(): MonthString[] {
+  const result: MonthString[] = [];
+  const now = new Date();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    result.push(`${y}-${m}` as MonthString);
+  }
+  return result;
+}
+
+/**
+ * Get all 12 months for a given year (Jan–Dec).
+ * Example: getMonthsForYear(2026) => ["2026-01", "2026-02", ..., "2026-12"].
+ */
+export function getMonthsForYear(year: number): MonthString[] {
+  const result: MonthString[] = [];
+  for (let m = 1; m <= 12; m++) {
+    const month = String(m).padStart(2, "0");
+    result.push(`${year}-${month}` as MonthString);
+  }
+  return result;
+}
+
+/**
+ * Get 12 calendar months ending in the given month (oldest first, for charts).
+ * Example: get12MonthsEndingIn("2026-03") => ["2025-04", "2025-05", ..., "2026-03"].
+ */
+export function get12MonthsEndingIn(monthString: MonthString): MonthString[] {
+  const result: MonthString[] = [];
+  const date = parse(monthString + "-01", "yyyy-MM-dd", new Date());
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    result.push(`${y}-${m}` as MonthString);
+  }
+  return result;
+}
+
+/** First month of a year as MonthString (e.g. 2026 -> "2026-01") */
+export function monthStringForYear(year: number): MonthString {
+  return `${year}-01` as MonthString;
+}
+
+/**
  * Validate if a string is a valid MonthString
  */
 export function isValidMonthString(value: string): value is MonthString {
