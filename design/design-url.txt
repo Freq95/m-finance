@@ -1,0 +1,5 @@
+# Design we are aiming for (target)
+# Reference: design/design-target-dashboard.png
+# See design/DESIGN_TARGET.md for full description.
+
+design/design-target-dashboard.png

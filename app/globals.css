@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 245 247 250;
+    --foreground: 17 24 39;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans bg-background text-textPrimary antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px);
+  }
+  .glass-dark {
+    background-color: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(24px);
+  }
+}

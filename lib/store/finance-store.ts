@@ -1,0 +1,310 @@
+/**
+ * Zustand Finance Store
+ * Global state management with persistence
+ */
+
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type {
+  MonthRecord,
+  Person,
+  PersonView,
+  CategoryAmounts,
+  MonthString,
+} from "../types";
+import { loadRecords, saveRecords } from "../storage/storage";
+import { createDefaultCategoryAmounts } from "../validation/schemas";
+import { getCurrentMonth } from "../utils/date";
+import { combineCategoryAmounts } from "../calculations/calculations";
+import { logError } from "../utils/errors";
+
+interface FinanceStore {
+  // State
+  records: MonthRecord[];
+  selectedPerson: PersonView;
+  selectedMonth: MonthString;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: string | null;
+  settings: {
+    includeInvestmentsInNetCashflow: boolean;
+  };
+
+  // Actions
+  loadRecords: () => Promise<void>;
+  updateMonth: (
+    month: MonthString,
+    data: Partial<CategoryAmounts>,
+    person: Person
+  ) => void;
+  updateMonthFull: (
+    month: MonthString,
+    data: { me: CategoryAmounts; wife: CategoryAmounts }
+  ) => void;
+  saveMonth: (month: MonthString) => Promise<void>;
+  duplicateMonth: (fromMonth: MonthString, toMonth: MonthString) => void;
+  resetMonth: (month: MonthString) => void;
+  setSelectedPerson: (person: PersonView) => void;
+  setSelectedMonth: (month: MonthString) => void;
+  updateSettings: (settings: Partial<FinanceStore["settings"]>) => void;
+
+  // Selectors (computed)
+  getCurrentMonthRecord: () => MonthRecord | null;
+  getLast12Months: () => MonthRecord[];
+  getLast6Months: () => MonthRecord[];
+  getCombinedData: (month: MonthString) => CategoryAmounts | null;
+}
+
+export const useFinanceStore = create<FinanceStore>()(
+  persist(
+    (set, get) => ({
+      // Initial state
+      records: [],
+      selectedPerson: "me",
+      selectedMonth: getCurrentMonth(),
+      isLoading: false,
+      isSaving: false,
+      error: null,
+      settings: {
+        includeInvestmentsInNetCashflow: true,
+      },
+
+      // Load records from IndexedDB
+      loadRecords: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const records = await loadRecords();
+          set({ records, isLoading: false });
+        } catch (error) {
+          logError(error, "loadRecords");
+          set({
+            error: "Failed to load records",
+            isLoading: false,
+          });
+        }
+      },
+
+      // Update month data
+      updateMonth: (month, data, person) => {
+        const state = get();
+        const records = [...state.records];
+        const index = records.findIndex((r) => r.month === month);
+
+        const defaultData = createDefaultCategoryAmounts();
+        const updatedData = { ...defaultData, ...data };
+
+        if (index >= 0) {
+          // Update existing record
+          records[index] = {
+            ...records[index],
+            people: {
+              ...records[index].people,
+              [person]: updatedData,
+            },
+            meta: {
+              ...records[index].meta,
+              updatedAt: new Date().toISOString(),
+              isSaved: false,
+            },
+          };
+        } else {
+          // Create new record
+          const otherPerson = person === "me" ? "wife" : "me";
+          const people =
+            person === "me"
+              ? { me: updatedData, wife: createDefaultCategoryAmounts() }
+              : { me: createDefaultCategoryAmounts(), wife: updatedData };
+          records.push({
+            month,
+            people,
+            meta: {
+              updatedAt: new Date().toISOString(),
+              isSaved: false,
+            },
+          });
+        }
+
+        set({ records });
+        saveRecords(records).catch((error) => {
+          logError(error, "updateMonth autosave");
+        });
+      },
+
+      updateMonthFull: (month, { me, wife }) => {
+        const state = get();
+        const records = [...state.records];
+        const index = records.findIndex((r) => r.month === month);
+
+        const record: MonthRecord = {
+          month,
+          people: { me: { ...me }, wife: { ...wife } },
+          meta: {
+            updatedAt: new Date().toISOString(),
+            isSaved: false,
+          },
+        };
+
+        if (index >= 0) {
+          records[index] = record;
+        } else {
+          records.push(record);
+        }
+
+        set({ records });
+        saveRecords(records).catch((error) => {
+          logError(error, "updateMonthFull autosave");
+        });
+      },
+
+      // Mark month as saved
+      saveMonth: async (month) => {
+        const state = get();
+        const records = [...state.records];
+        const index = records.findIndex((r) => r.month === month);
+
+        if (index >= 0) {
+          records[index] = {
+            ...records[index],
+            meta: {
+              ...records[index].meta,
+              isSaved: true,
+              updatedAt: new Date().toISOString(),
+            },
+          };
+          set({ records, isSaving: true });
+          try {
+            await saveRecords(records);
+          } catch (error) {
+            logError(error, "saveMonth");
+            set({ error: "Failed to save" });
+          } finally {
+            set({ isSaving: false });
+          }
+        }
+      },
+
+      // Duplicate month data
+      duplicateMonth: (fromMonth, toMonth) => {
+        const state = get();
+        const fromRecord = state.records.find((r) => r.month === fromMonth);
+
+        if (!fromRecord) {
+          return;
+        }
+
+        const records = [...state.records];
+        const existingIndex = records.findIndex((r) => r.month === toMonth);
+
+        const duplicatedRecord: MonthRecord = {
+          month: toMonth,
+          people: {
+            me: { ...fromRecord.people.me },
+            wife: { ...fromRecord.people.wife },
+          },
+          meta: {
+            updatedAt: new Date().toISOString(),
+            isSaved: false,
+          },
+        };
+
+        if (existingIndex >= 0) {
+          records[existingIndex] = duplicatedRecord;
+        } else {
+          records.push(duplicatedRecord);
+        }
+
+        set({ records });
+        saveRecords(records).catch((error) => {
+          logError(error, "duplicateMonth");
+        });
+      },
+
+      // Reset month data
+      resetMonth: (month) => {
+        const state = get();
+        const records = [...state.records];
+        const index = records.findIndex((r) => r.month === month);
+
+        if (index >= 0) {
+          records[index] = {
+            month,
+            people: {
+              me: createDefaultCategoryAmounts(),
+              wife: createDefaultCategoryAmounts(),
+            },
+            meta: {
+              updatedAt: new Date().toISOString(),
+              isSaved: false,
+            },
+          };
+          set({ records });
+          saveRecords(records).catch((error) => {
+            logError(error, "resetMonth");
+          });
+        }
+      },
+
+      // Set selected person view
+      setSelectedPerson: (person) => {
+        set({ selectedPerson: person });
+      },
+
+      // Set selected month
+      setSelectedMonth: (month) => {
+        set({ selectedMonth: month });
+      },
+
+      // Update settings
+      updateSettings: (newSettings) => {
+        set((state) => ({
+          settings: { ...state.settings, ...newSettings },
+        }));
+      },
+
+      // Get current month record
+      getCurrentMonthRecord: () => {
+        const state = get();
+        return state.records.find((r) => r.month === state.selectedMonth) || null;
+      },
+
+      // Get last 12 months
+      getLast12Months: () => {
+        const state = get();
+        return state.records
+          .sort((a, b) => b.month.localeCompare(a.month))
+          .slice(0, 12);
+      },
+
+      // Get last 6 months
+      getLast6Months: () => {
+        const state = get();
+        return state.records
+          .sort((a, b) => b.month.localeCompare(a.month))
+          .slice(0, 6);
+      },
+
+      // Get combined data for a month
+      getCombinedData: (month) => {
+        const state = get();
+        const record = state.records.find((r) => r.month === month);
+        if (!record) {
+          return null;
+        }
+        return combineCategoryAmounts(record.people.me, record.people.wife);
+      },
+    }),
+    {
+      name: "finance-store",
+      storage: createJSONStorage(() => ({
+        getItem: async () => null, // Don't use localStorage, use IndexedDB
+        setItem: async () => {},
+        removeItem: async () => {},
+      })),
+      partialize: (state) => ({
+        selectedPerson: state.selectedPerson,
+        selectedMonth: state.selectedMonth,
+        settings: state.settings,
+      }),
+    }
+  )
+);
