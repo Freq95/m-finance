@@ -1,0 +1,15 @@
+https://api.frankfurter.app/latest?from=RON&to=USD,EUR  this is the right API
+it displays: {"amount":1.0,"base":"RON","date":"2026-01-29","rates":{"EUR":0.19621,"USD":0.23483}}
+
+currency.ts:59 GET https://api.frankfurter.dev/latest?from=USD&to=RON,EUR 404 (Not Found)
+
+you will work only in m-finance-dash
+
+
+--------------------------
+
+can you make the Recharts grey rectangle from those bars, with rounded edges that respects the design rules of the bar rounded edges?
+
+you will work only in m-finance-dash
+
+[insert photo with bar background]

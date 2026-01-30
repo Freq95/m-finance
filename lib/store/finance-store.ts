@@ -18,6 +18,7 @@ import { createDefaultCategoryAmounts } from "../validation/schemas";
 import { getCurrentMonth } from "../utils/date";
 import { combineCategoryAmounts } from "../calculations/calculations";
 import { logError } from "../utils/errors";
+import type { DisplayCurrency, ExchangeRates } from "../utils/currency";
 
 export type DashboardView = "month" | "annual";
 export type Theme = "light" | "dark";
@@ -29,6 +30,8 @@ interface FinanceStore {
   selectedMonth: MonthString;
   dashboardView: DashboardView;
   theme: Theme;
+  displayCurrency: DisplayCurrency;
+  exchangeRates: ExchangeRates | null;
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
@@ -38,6 +41,8 @@ interface FinanceStore {
   upcomingPayments: UpcomingPayment[];
 
   // Actions
+  setDisplayCurrency: (currency: DisplayCurrency) => void;
+  setExchangeRates: (rates: ExchangeRates | null) => void;
   loadRecords: () => Promise<void>;
   updateMonth: (
     month: MonthString,
@@ -78,6 +83,8 @@ export const useFinanceStore = create<FinanceStore>()(
       selectedMonth: getCurrentMonth(),
       dashboardView: "month",
       theme: "light",
+      displayCurrency: "RON",
+      exchangeRates: null,
       isLoading: false,
       isSaving: false,
       error: null,
@@ -85,6 +92,9 @@ export const useFinanceStore = create<FinanceStore>()(
         includeInvestmentsInNetCashflow: true,
       },
       upcomingPayments: [],
+
+      setDisplayCurrency: (currency) => set({ displayCurrency: currency }),
+      setExchangeRates: (rates) => set({ exchangeRates: rates }),
 
       // Load records from IndexedDB
       loadRecords: async () => {
@@ -354,6 +364,7 @@ export const useFinanceStore = create<FinanceStore>()(
         selectedMonth: state.selectedMonth,
         dashboardView: state.dashboardView,
         theme: state.theme,
+        displayCurrency: state.displayCurrency,
         settings: state.settings,
         upcomingPayments: state.upcomingPayments,
       }),

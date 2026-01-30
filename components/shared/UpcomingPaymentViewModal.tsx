@@ -1,5 +1,6 @@
 "use client";
 
+import { useFinanceStore } from "@/lib/store/finance-store";
 import type { UpcomingPayment } from "@/lib/types";
 import { getUpcomingPaymentIcon } from "@/lib/upcoming-payment-icons";
 import {
@@ -11,7 +12,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { formatRONCompact } from "@/lib/utils/currency";
+import { formatCurrency } from "@/lib/utils/currency";
 import { format, parseISO } from "date-fns";
 import { ro } from "date-fns/locale";
 
@@ -28,6 +29,9 @@ export function UpcomingPaymentViewModal({
   item,
   onEdit,
 }: UpcomingPaymentViewModalProps) {
+  const displayCurrency = useFinanceStore((s) => s.displayCurrency);
+  const exchangeRates = useFinanceStore((s) => s.exchangeRates);
+
   if (!item) return null;
 
   const Icon = getUpcomingPaymentIcon(item.icon);
@@ -77,7 +81,7 @@ export function UpcomingPaymentViewModal({
               Sumă
             </p>
             <p className="text-sm text-textPrimary dark:text-white tabular-nums">
-              {item.cost != null ? formatRONCompact(item.cost) : "— (necunoscută)"}
+              {item.cost != null ? formatCurrency(item.cost, displayCurrency, exchangeRates) : "— (necunoscută)"}
             </p>
           </div>
         </div>

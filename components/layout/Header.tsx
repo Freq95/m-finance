@@ -38,6 +38,7 @@ export function Header({
   const setSelectedPerson = useFinanceStore((s) => s.setSelectedPerson);
   const theme = useFinanceStore((s) => s.theme);
   const toggleTheme = useFinanceStore((s) => s.toggleTheme);
+  const exchangeRates = useFinanceStore((s) => s.exchangeRates);
   const { title, subtitle } = getPageMeta(pathname);
 
   return (
@@ -64,26 +65,54 @@ export function Header({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
+        {!pathname.startsWith("/monthly-input") &&
+          pathname !== "/" &&
+          !pathname.startsWith("/settings") && (
+          <div
+            className="flex rounded-xl bg-black/[0.04] dark:bg-white/10 p-1 border border-black/[0.06] dark:border-white/10"
+            role="group"
+            aria-label="Profile view"
+          >
+            {personOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setSelectedPerson(opt.value)}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid min-w-[4rem] sm:min-w-0",
+                  selectedPerson === opt.value
+                    ? "bg-white/90 dark:bg-white/20 text-textPrimary dark:text-white shadow-soft border border-white/30 dark:border-white/20"
+                    : "text-textSecondary hover:text-textPrimary hover:bg-black/[0.04] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div
-          className="flex rounded-xl bg-black/[0.04] dark:bg-white/10 p-1 border border-black/[0.06] dark:border-white/10"
           role="group"
-          aria-label="Profile view"
+          aria-label="Curs valutar"
+          className={cn(
+            "inline-flex items-center gap-1 rounded-xl border border-white/20 dark:border-white/10 bg-black/[0.04] dark:bg-white/10 px-2 py-1.5"
+          )}
         >
-          {personOptions.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setSelectedPerson(opt.value)}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid min-w-[4rem] sm:min-w-0",
-                selectedPerson === opt.value
-                  ? "bg-white/90 dark:bg-white/20 text-textPrimary dark:text-white shadow-soft border border-white/30 dark:border-white/20"
-                  : "text-textSecondary hover:text-textPrimary hover:bg-black/[0.04] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
+          <span
+            className="shrink-0 text-sm font-medium text-textSecondary dark:text-gray-300"
+            aria-live="polite"
+          >
+            {exchangeRates ? `$ ${(1 / exchangeRates.usd).toFixed(2)}` : "$ —"}
+          </span>
+          <span
+            className="w-px h-4 bg-white/20 dark:bg-white/15 shrink-0"
+            aria-hidden
+          />
+          <span
+            className="shrink-0 text-sm font-medium text-textSecondary dark:text-gray-300"
+            aria-live="polite"
+          >
+            {exchangeRates ? `€ ${(1 / exchangeRates.eur).toFixed(2)}` : "€ —"}
+          </span>
         </div>
         <button
           type="button"

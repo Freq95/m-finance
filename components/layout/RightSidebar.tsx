@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import { CATEGORY_SECTIONS } from "@/lib/constants";
 import type { CategoryAmounts, UpcomingPayment } from "@/lib/types";
-import { formatRON, formatRONCompact } from "@/lib/utils/currency";
+import { formatCurrency } from "@/lib/utils/currency";
 import { formatMonthShort } from "@/lib/utils/date";
 import { Plus, Pencil } from "lucide-react";
 import { getUpcomingPaymentIcon } from "@/lib/upcoming-payment-icons";
@@ -50,6 +50,8 @@ export function RightSidebar() {
   const getLast12Months = useFinanceStore((s) => s.getLast12Months);
   const getCombinedData = useFinanceStore((s) => s.getCombinedData);
   const upcomingPayments = useFinanceStore((s) => s.upcomingPayments);
+  const displayCurrency = useFinanceStore((s) => s.displayCurrency);
+  const exchangeRates = useFinanceStore((s) => s.exchangeRates);
 
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<UpcomingPayment | null>(
@@ -164,7 +166,7 @@ export function RightSidebar() {
                       </p>
                     </div>
                     <span className="text-sm font-medium text-textPrimary shrink-0 tabular-nums whitespace-nowrap dark:text-gray-100">
-                      {item.cost != null ? formatRONCompact(item.cost) : "—"}
+                      {item.cost != null ? formatCurrency(item.cost, displayCurrency, exchangeRates) : "—"}
                     </span>
                     <button
                       type="button"
@@ -210,7 +212,7 @@ export function RightSidebar() {
                   </p>
                 </div>
                 <span className="text-sm font-medium text-textPrimary shrink-0 tabular-nums dark:text-gray-100">
-                  {formatRON(a.amount)}
+                  {formatCurrency(a.amount, displayCurrency, exchangeRates)}
                 </span>
               </li>
             ))

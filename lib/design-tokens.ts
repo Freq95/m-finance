@@ -14,30 +14,68 @@ export const colors = {
   textSecondary: "#6B7280", // Gray-500
   textMuted: "#9CA3AF", // Gray-400
 
-  // Accents
-  accentPositive: "#10B981", // Green-500
-  accentNegative: "#EF4444", // Red-500
-  accentPrimary: "#3B82F6", // Blue-500
-  accentPrimaryHover: "#2563EB", // Blue-600
-  accentPrimaryActive: "#1D4ED8", // Blue-700
+  // Accents (palette: teal #215E61, dark blue #233D4D, orange #FE7F2D, light #F5FBE6)
+  accentPositive: "#215E61", // Teal
+  accentNegative: "#FE7F2D", // Orange
+  accentPrimary: "#215E61", // Teal
+  accentPrimaryHover: "#1a4a4d", // Darker teal
+  accentPrimaryActive: "#233D4D", // Dark blue
+  accentOrange: "#FE7F2D", // Chart/secondary accent
 
   // Borders & Dividers
   border: "#E5E7EB", // Gray-200
   divider: "#E5E7EB", // Gray-200
 
-  // Status Colors
-  saved: "#10B981", // Green
-  savedBg: "#D1FAE5", // Green-100
-  savedText: "#065F46", // Green-800
-  draft: "#F59E0B", // Amber
-  draftBg: "#FEF3C7", // Amber-100
-  draftText: "#92400E", // Amber-800
+  // Status Colors (palette)
+  saved: "#215E61", // Teal
+  savedBg: "#F5FBE6", // Light yellow-green
+  savedText: "#233D4D", // Dark blue
+  draft: "#FE7F2D", // Orange
+  draftBg: "#FFF4ED", // Light orange
+  draftText: "#B45309", // Dark orange
   pending: "#6B7280", // Gray
+
+  // Chart palette (for pie etc.): teal, dark blue, orange (+ greys unchanged elsewhere)
+  chartPalette: ["#215E61", "#233D4D", "#FE7F2D", "#215E61", "#233D4D", "#FE7F2D"],
 
   // Shadows
   shadow: "rgba(0, 0, 0, 0.05)",
   shadowHover: "rgba(0, 0, 0, 0.1)",
 } as const;
+
+/** Recharts Tooltip: no default white box; use with chart-tooltip class or contentStyle */
+export const chartTooltipWrapperStyle: Record<string, string | number> = {
+  outline: "none",
+  border: "none",
+  background: "transparent",
+  boxShadow: "none",
+  padding: 0,
+};
+
+/** Bar corner radius for Recharts bars (stacked and single). [topLeft, topRight, bottomRight, bottomLeft]. */
+export const barCornerRadius = 4;
+
+/** Bar chart hover cursor — subtle highlight (replaces default grey block). In Bar charts use a Rectangle element with radius for rounded corners. */
+export const chartBarCursorStyle: Record<string, string | number> = {
+  fill: "rgba(255, 255, 255, 0.06)",
+  stroke: "rgba(255, 255, 255, 0.14)",
+  strokeWidth: 1,
+};
+
+/** Recharts default tooltip content (formatter-only) — dark glass */
+export const chartTooltipContentStyle: Record<string, string | number> = {
+  margin: 0,
+  padding: "12px 16px",
+  borderRadius: "16px",
+  background: "rgba(30, 30, 34, 0.92)",
+  backdropFilter: "blur(40px)",
+  WebkitBackdropFilter: "blur(40px)",
+  border: "1px solid rgba(255, 255, 255, 0.14)",
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2)",
+  color: "rgb(255, 255, 255)",
+  fontSize: "13px",
+  minWidth: "140px",
+};
 
 export const typography = {
   fontFamily: "var(--font-poppins), 'Poppins', sans-serif",

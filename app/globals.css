@@ -90,6 +90,43 @@
     box-shadow: var(--shadow-glass);
   }
 
+  /* Chart tooltips — dark glass, works in Recharts portal */
+  .chart-tooltip {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: rgba(30, 30, 34, 0.92);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+    color: rgb(255, 255, 255);
+    font-size: 13px;
+    min-width: 140px;
+  }
+  .chart-tooltip-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .chart-tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+  }
+
+  /* Bar chart hover cursor — subtle highlight instead of default grey block */
+  .chart-bar-cursor {
+    fill: rgba(255, 255, 255, 0.06);
+    stroke: rgba(255, 255, 255, 0.14);
+    stroke-width: 1;
+    rx: 6;
+    ry: 6;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+  }
+
   /* Modal overlay — blur + dim */
   .glass-overlay {
     background: rgba(var(--overlay-dim), var(--overlay-opacity));

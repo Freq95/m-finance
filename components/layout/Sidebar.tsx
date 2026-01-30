@@ -55,11 +55,6 @@ export function Sidebar() {
         )}
       >
         <div className="flex h-full flex-col items-center py-4">
-          <div className="mb-5 flex gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ef4444]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#eab308]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
-          </div>
           <nav className="flex flex-1 flex-col gap-0.5">
             {navigation.map((item) => {
               const isActive =

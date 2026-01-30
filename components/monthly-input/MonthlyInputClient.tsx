@@ -17,7 +17,6 @@ import {
   calculateIncomeTotal,
   calculateBillsTotal,
   calculateExpensesTotal,
-  calculateInvestmentsTotal,
   calculateNetCashflow,
 } from "@/lib/calculations/calculations";
 import { formatRON } from "@/lib/utils/currency";
@@ -37,7 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
-import { Save, Copy, RotateCcw } from "lucide-react";
+import { Save, Copy, RotateCcw, TrendingUp, Receipt, Wallet, PiggyBank, Landmark, Minus } from "lucide-react";
 
 export function MonthlyInputClient() {
   const loadRecords = useFinanceStore((s) => s.loadRecords);
@@ -260,49 +259,72 @@ export function MonthlyInputClient() {
         </CardContent>
       </Card>
 
-      <div className="fixed bottom-0 left-0 right-0 z-30 glass-panel border-t border-white/20 dark:border-white/10 px-6 py-4 shadow-glass lg:pl-[72px]">
-        <div className="mx-auto max-w-4xl">
-          <div className="text-h3 mb-2 dark:text-white">Totaluri (Paul + Codru)</div>
-          <div className="flex flex-wrap gap-6 text-small dark:text-white">
-            <span>
-              Venit total:{" "}
-              <span className="dark:text-white">
-                {formatRON(calculateIncomeTotal(combinedForFooter))}
-              </span>
-            </span>
-            <span>
-              Total facturi:{" "}
-              <span className="dark:text-white">
-                {formatRON(calculateBillsTotal(combinedForFooter))}
-              </span>
-            </span>
-            <span>
-              Cheltuieli totale:{" "}
-              <span className="dark:text-white">
-                {formatRON(calculateExpensesTotal(combinedForFooter))}
-              </span>
-            </span>
-            <span>
-              Economii / Investiții:{" "}
-              <span className="dark:text-white">
-                {formatRON(calculateInvestmentsTotal(combinedForFooter))}
-              </span>
-            </span>
-            <span>
-              Cashflow net:{" "}
-              <span
-                className={
-                  "" +
-                  (calculateNetCashflow(combinedForFooter, includeInv) >= 0
-                    ? "text-accentPositive"
-                    : "text-accentNegative")
-                }
-              >
-                {formatRON(
-                  calculateNetCashflow(combinedForFooter, includeInv)
-                )}
-              </span>
-            </span>
+      <div className="fixed bottom-0 left-0 right-0 z-30 lg:pl-[72px] px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 pt-2 pb-4">
+          <div className="rounded-2xl bg-teal/90 dark:bg-navy/90 backdrop-blur-xl border border-white/20 shadow-glass overflow-hidden">
+            <div className="px-5 py-4 sm:px-6 sm:py-5">
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
+                {[
+                  {
+                    label: "Venit",
+                    value: calculateIncomeTotal(combinedForFooter),
+                    icon: TrendingUp,
+                    valueColor: "text-white",
+                  },
+                  {
+                    label: "Facturi",
+                    value: calculateBillsTotal(combinedForFooter),
+                    icon: Receipt,
+                    valueColor: "text-white",
+                  },
+                  {
+                    label: "Cheltuieli",
+                    value: calculateExpensesTotal(combinedForFooter),
+                    icon: Wallet,
+                    valueColor: "text-white",
+                  },
+                  {
+                    label: "Economii",
+                    value: combinedForFooter.economii ?? 0,
+                    icon: PiggyBank,
+                    valueColor: "text-white",
+                  },
+                  {
+                    label: "Investiții",
+                    value: combinedForFooter.investitii ?? 0,
+                    icon: Landmark,
+                    valueColor: "text-white",
+                  },
+                  {
+                    label: "Cashflow net",
+                    value: calculateNetCashflow(combinedForFooter, includeInv),
+                    icon: Minus,
+                    valueColor:
+                      calculateNetCashflow(combinedForFooter, includeInv) >= 0
+                        ? "text-emerald-300"
+                        : "text-red-300",
+                  },
+                ].map(({ label, value, icon: Icon, valueColor }) => (
+                  <div
+                    key={label}
+                    className="flex items-start gap-3 rounded-xl bg-white/5 border border-white/10 px-5 py-4 backdrop-blur-sm min-w-0"
+                  >
+                    <div className="shrink-0 mt-0.5 text-white/90">
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} aria-hidden />
+                    </div>
+                    <div className="min-w-0 overflow-visible">
+                      <p className="text-xs sm:text-sm font-medium text-white/70 break-words">{label}</p>
+                      <p
+                        className={`text-base sm:text-lg font-semibold tabular-nums break-all ${valueColor}`}
+                        title={formatRON(value)}
+                      >
+                        {formatRON(value)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
