@@ -18,6 +18,7 @@ import { createDefaultCategoryAmounts } from "../validation/schemas";
 import { getCurrentMonth } from "../utils/date";
 import { combineCategoryAmounts } from "../calculations/calculations";
 import { logError } from "../utils/errors";
+import { findRecordIndex, upsertRecord } from "./record-helpers";
 import type { DisplayCurrency, ExchangeRates } from "../utils/currency";
 
 export type Theme = "light" | "dark";
@@ -110,43 +111,43 @@ export const useFinanceStore = create<FinanceStore>()(
       // Update month data
       updateMonth: (month, data, person) => {
         const state = get();
-        const records = [...state.records];
-        const index = records.findIndex((r) => r.month === month);
-
+        const index = findRecordIndex(state.records, month);
         const defaultData = createDefaultCategoryAmounts();
         const updatedData = { ...defaultData, ...data };
 
-        if (index >= 0) {
-          // Update existing record
-          records[index] = {
-            ...records[index],
-            people: {
-              ...records[index].people,
-              [person]: updatedData,
-            },
-            meta: {
-              ...records[index].meta,
-              updatedAt: new Date().toISOString(),
-              isSaved: false,
-            },
-          };
-        } else {
-          // Create new record
-          const otherPerson = person === "me" ? "wife" : "me";
-          const people =
-            person === "me"
-              ? { me: updatedData, wife: createDefaultCategoryAmounts() }
-              : { me: createDefaultCategoryAmounts(), wife: updatedData };
-          records.push({
-            month,
-            people,
-            meta: {
-              updatedAt: new Date().toISOString(),
-              isSaved: false,
-            },
-          });
-        }
+        const record: MonthRecord =
+          index >= 0
+            ? {
+                ...state.records[index],
+                people: {
+                  ...state.records[index].people,
+                  [person]: updatedData,
+                },
+                meta: {
+                  ...state.records[index].meta,
+                  updatedAt: new Date().toISOString(),
+                  isSaved: false,
+                },
+              }
+            : {
+                month,
+                people:
+                  person === "me"
+                    ? {
+                        me: updatedData,
+                        wife: createDefaultCategoryAmounts(),
+                      }
+                    : {
+                        me: createDefaultCategoryAmounts(),
+                        wife: updatedData,
+                      },
+                meta: {
+                  updatedAt: new Date().toISOString(),
+                  isSaved: false,
+                },
+              };
 
+        const records = upsertRecord(state.records, record);
         set({ records });
         saveRecords(records).catch((error) => {
           logError(error, "updateMonth autosave");
@@ -155,9 +156,6 @@ export const useFinanceStore = create<FinanceStore>()(
 
       updateMonthFull: (month, { me, wife }) => {
         const state = get();
-        const records = [...state.records];
-        const index = records.findIndex((r) => r.month === month);
-
         const record: MonthRecord = {
           month,
           people: { me: { ...me }, wife: { ...wife } },
@@ -166,13 +164,7 @@ export const useFinanceStore = create<FinanceStore>()(
             isSaved: false,
           },
         };
-
-        if (index >= 0) {
-          records[index] = record;
-        } else {
-          records.push(record);
-        }
-
+        const records = upsertRecord(state.records, record);
         set({ records });
         saveRecords(records).catch((error) => {
           logError(error, "updateMonthFull autosave");
@@ -182,28 +174,27 @@ export const useFinanceStore = create<FinanceStore>()(
       // Mark month as saved
       saveMonth: async (month) => {
         const state = get();
-        const records = [...state.records];
-        const index = records.findIndex((r) => r.month === month);
+        const index = findRecordIndex(state.records, month);
+        if (index < 0) return;
 
-        if (index >= 0) {
-          records[index] = {
-            ...records[index],
-            meta: {
-              ...records[index].meta,
-              isSaved: true,
-              updatedAt: new Date().toISOString(),
-            },
-          };
-          set({ records, isSaving: true, error: null });
-          try {
-            await saveRecords(records);
-            set({ error: null });
-          } catch (error) {
-            logError(error, "saveMonth");
-            set({ error: "Failed to save" });
-          } finally {
-            set({ isSaving: false });
-          }
+        const record: MonthRecord = {
+          ...state.records[index],
+          meta: {
+            ...state.records[index].meta,
+            isSaved: true,
+            updatedAt: new Date().toISOString(),
+          },
+        };
+        const records = upsertRecord(state.records, record);
+        set({ records, isSaving: true, error: null });
+        try {
+          await saveRecords(records);
+          set({ error: null });
+        } catch (error) {
+          logError(error, "saveMonth");
+          set({ error: "Failed to save" });
+        } finally {
+          set({ isSaving: false });
         }
       },
 
@@ -234,13 +225,7 @@ export const useFinanceStore = create<FinanceStore>()(
       duplicateMonth: (fromMonth, toMonth) => {
         const state = get();
         const fromRecord = state.records.find((r) => r.month === fromMonth);
-
-        if (!fromRecord) {
-          return;
-        }
-
-        const records = [...state.records];
-        const existingIndex = records.findIndex((r) => r.month === toMonth);
+        if (!fromRecord) return;
 
         const duplicatedRecord: MonthRecord = {
           month: toMonth,
@@ -253,13 +238,7 @@ export const useFinanceStore = create<FinanceStore>()(
             isSaved: false,
           },
         };
-
-        if (existingIndex >= 0) {
-          records[existingIndex] = duplicatedRecord;
-        } else {
-          records.push(duplicatedRecord);
-        }
-
+        const records = upsertRecord(state.records, duplicatedRecord);
         set({ records });
         saveRecords(records).catch((error) => {
           logError(error, "duplicateMonth");
@@ -269,26 +248,25 @@ export const useFinanceStore = create<FinanceStore>()(
       // Reset month data
       resetMonth: (month) => {
         const state = get();
-        const records = [...state.records];
-        const index = records.findIndex((r) => r.month === month);
+        const index = findRecordIndex(state.records, month);
+        if (index < 0) return;
 
-        if (index >= 0) {
-          records[index] = {
-            month,
-            people: {
-              me: createDefaultCategoryAmounts(),
-              wife: createDefaultCategoryAmounts(),
-            },
-            meta: {
-              updatedAt: new Date().toISOString(),
-              isSaved: false,
-            },
-          };
-          set({ records });
-          saveRecords(records).catch((error) => {
-            logError(error, "resetMonth");
-          });
-        }
+        const record: MonthRecord = {
+          month,
+          people: {
+            me: createDefaultCategoryAmounts(),
+            wife: createDefaultCategoryAmounts(),
+          },
+          meta: {
+            updatedAt: new Date().toISOString(),
+            isSaved: false,
+          },
+        };
+        const records = upsertRecord(state.records, record);
+        set({ records });
+        saveRecords(records).catch((error) => {
+          logError(error, "resetMonth");
+        });
       },
 
       // Set selected person view

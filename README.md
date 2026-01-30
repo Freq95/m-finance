@@ -43,6 +43,11 @@ npm run build
 npm start
 ```
 
+### Testing
+
+- **Unit tests** (Jest): `npm test`
+- **E2E tests** (Playwright): Install browsers once with `npm run test:e2e:install`, then run `npm run test:e2e`. The config starts the dev server automatically unless `CI` is set.
+
 ## Project Structure
 
 ```

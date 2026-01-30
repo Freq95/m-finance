@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
+import { SegmentDivider, segmentPanelStyles } from "@/components/shared/SegmentPanel";
 import { Save, Copy, RotateCcw, TrendingUp, Receipt, Wallet, PiggyBank, Landmark, Minus, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -137,7 +138,7 @@ export function MonthlyInputClient() {
 
   const record = getCurrentMonthRecord();
   const combinedForFooter = combineCategoryAmounts(formData.me, formData.wife);
-  const includeInv = settings.includeInvestmentsInNetCashflow;
+  const includeInvestmentsInNetCashflow = settings.includeInvestmentsInNetCashflow;
 
   if (isLoading) {
     return (
@@ -162,81 +163,67 @@ export function MonthlyInputClient() {
       </div>
 
       {/* Period + actions — same panel style as Dashboard */}
-      {(() => {
-        const panelHeight = "h-11";
-        const segmentGroup = cn(
-          "inline-flex items-center rounded-xl glass-surface border border-white/20 dark:border-white/10 p-1 shrink-0",
-          panelHeight
-        );
-        const divider = (
-          <span
-            className={cn("w-px bg-white/20 dark:bg-white/15 shrink-0", panelHeight)}
-            aria-hidden
-          />
-        );
-        const currentMonth = getCurrentMonth();
-        return (
-          <div className="rounded-2xl glass-panel shadow-soft p-4">
-            <div className="flex flex-wrap items-center justify-center gap-3 lg:gap-4">
-              <button
-                type="button"
-                disabled={selectedMonth === currentMonth}
-                onClick={() => setSelectedMonth(currentMonth)}
-                className={cn(
-                  "inline-flex items-center justify-center gap-1.5 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid shrink-0",
-                  panelHeight,
-                  "text-textSecondary hover:bg-white/60 hover:text-textPrimary dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white",
-                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:dark:hover:bg-transparent"
-                )}
-              >
-                <Calendar className="h-4 w-4 shrink-0" />
-                Luna curentă
-              </button>
-              {divider}
-              <div
-                role="group"
-                aria-label="Lună"
-                className={cn(segmentGroup, "gap-2")}
-              >
-                <button
-                  type="button"
-                  onClick={() => setSelectedMonth(getPreviousMonth(selectedMonth))}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/70 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
-                  aria-label="Luna anterioară"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <div className="min-w-[7rem] py-1 text-center">
-                  <span className="text-base font-medium text-textPrimary dark:text-white">
-                    {formatMonthShort(selectedMonth)}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedMonth(getNextMonth(selectedMonth))}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/70 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
-                  aria-label="Luna următoare"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </div>
-              {divider}
-              <Button
-                onClick={() => setDupDialogOpen(true)}
-                disabled={!hasPrevRecord}
-                variant="secondary"
-                className={panelHeight}
+      <div className="rounded-2xl glass-panel shadow-soft p-4">
+        <div className="flex flex-wrap items-center justify-center gap-3 lg:gap-4">
+          <button
+            type="button"
+            disabled={selectedMonth === getCurrentMonth()}
+            onClick={() => setSelectedMonth(getCurrentMonth())}
+            className={cn(
+              "inline-flex items-center justify-center gap-1.5 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid shrink-0",
+              segmentPanelStyles.panelHeight,
+              "text-textSecondary hover:bg-white/60 hover:text-textPrimary dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white",
+              "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:dark:hover:bg-transparent"
+            )}
+          >
+            <Calendar className="h-4 w-4 shrink-0" />
+            Luna curentă
+          </button>
+          <SegmentDivider />
+          <div
+            role="group"
+            aria-label="Lună"
+            className={cn(segmentPanelStyles.segmentGroupBase, "gap-2")}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedMonth(getPreviousMonth(selectedMonth))}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/70 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
+              aria-label="Luna anterioară"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="min-w-[7rem] py-1 text-center">
+              <span className="text-base font-medium text-textPrimary dark:text-white">
+                {formatMonthShort(selectedMonth)}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedMonth(getNextMonth(selectedMonth))}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/70 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
+              aria-label="Luna următoare"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+          <SegmentDivider />
+          <Button
+            onClick={() => setDupDialogOpen(true)}
+            disabled={!hasPrevRecord}
+            variant="secondary"
+            className={segmentPanelStyles.panelHeight}
                 aria-label={hasPrevRecord ? "Duplică luna anterioară" : "Nu există lună anterioară de duplicat"}
               >
                 <Copy className="mr-2 h-4 w-4 text-textSecondary dark:text-white" />
                 Duplică luna anterioară
               </Button>
-              <Button
-                onClick={() => setResetDialogOpen(true)}
-                variant="secondary"
-                className={panelHeight}
-                aria-label="Resetează luna la zero"
-              >
+          <Button
+            onClick={() => setResetDialogOpen(true)}
+            variant="secondary"
+            className={segmentPanelStyles.panelHeight}
+            aria-label="Resetează luna la zero"
+          >
                 <RotateCcw className="mr-2 h-4 w-4 text-textSecondary dark:text-white" />
                 Resetează luna
               </Button>
@@ -279,11 +266,9 @@ export function MonthlyInputClient() {
                     <Save className="h-5 w-5 stroke-[1.5]" />
                   )}
                 </button>
-              </Tooltip>
-            </div>
-          </div>
-        );
-      })()}
+          </Tooltip>
+        </div>
+      </div>
 
       <Card>
         <CardHeader className="border-b border-white/10 dark:border-white/10 glass-surface rounded-t-2xl px-6 pb-4 pt-6 border-x border-t border-white/10">
@@ -381,10 +366,10 @@ export function MonthlyInputClient() {
                   },
                   {
                     label: "Cashflow net",
-                    value: calculateNetCashflow(combinedForFooter, includeInv),
+                    value: calculateNetCashflow(combinedForFooter, includeInvestmentsInNetCashflow),
                     icon: Minus,
                     valueColor:
-                      calculateNetCashflow(combinedForFooter, includeInv) >= 0
+                      calculateNetCashflow(combinedForFooter, includeInvestmentsInNetCashflow) >= 0
                         ? "text-emerald-300"
                         : "text-red-300",
                   },

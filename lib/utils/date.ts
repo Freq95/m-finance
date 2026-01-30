@@ -76,6 +76,7 @@ export function getNextMonth(monthString: MonthString): MonthString {
  * Get last N calendar months (including current), newest first.
  * Example: if today is Jan 2026, getLast12CalendarMonths() returns
  * ["2026-01", "2025-12", "2025-11", ..., "2025-02"].
+ * Reserved for future use (e.g. calendar picker).
  */
 export function getLast12CalendarMonths(): MonthString[] {
   const result: MonthString[] = [];
@@ -105,6 +106,7 @@ export function getMonthsForYear(year: number): MonthString[] {
 /**
  * Get 12 calendar months ending in the given month (oldest first, for charts).
  * Example: get12MonthsEndingIn("2026-03") => ["2025-04", "2025-05", ..., "2026-03"].
+ * Reserved for future use.
  */
 export function get12MonthsEndingIn(monthString: MonthString): MonthString[] {
   const result: MonthString[] = [];

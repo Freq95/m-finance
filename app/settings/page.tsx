@@ -3,8 +3,8 @@
 import { useState, useRef } from "react";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import { cn } from "@/lib/utils";
-import { exportData, saveRecords } from "@/lib/storage/storage";
-import { validateSchema } from "@/lib/storage/migrations";
+import { getErrorMessage } from "@/lib/utils/errors";
+import { exportBackup, importBackup } from "@/lib/settings/data-io";
 import { Button } from "@/components/ui/button";
 
 export default function SettingsPage() {
@@ -19,21 +19,12 @@ export default function SettingsPage() {
 
   const handleExport = async () => {
     try {
-      const data = await exportData();
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `finance-dashboard-backup-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+      await exportBackup();
       setDataMessage({ type: "success", text: "Backup downloaded." });
     } catch (e) {
       setDataMessage({
         type: "error",
-        text: e instanceof Error ? e.message : "Export failed.",
+        text: getErrorMessage(e),
       });
     }
   };
@@ -43,16 +34,16 @@ export default function SettingsPage() {
     if (!file) return;
     setDataMessage(null);
     try {
-      const text = await file.text();
-      const parsed = JSON.parse(text) as unknown;
-      const schema = validateSchema(parsed);
-      await saveRecords(schema.data);
+      await importBackup(file);
       await loadRecords();
-      setDataMessage({ type: "success", text: "Data restored. Current data was replaced." });
+      setDataMessage({
+        type: "success",
+        text: "Data restored. Current data was replaced.",
+      });
     } catch (err) {
       setDataMessage({
         type: "error",
-        text: err instanceof Error ? err.message : "Invalid backup file.",
+        text: getErrorMessage(err),
       });
     }
     e.target.value = "";

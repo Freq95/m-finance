@@ -4,7 +4,7 @@
  */
 
 import localforage from "localforage";
-import type { StorageSchema } from "../types";
+import type { StorageSchema, MonthRecord } from "../types";
 import { StorageSchema as StorageSchemaZod } from "../validation/schemas";
 import { migrateData } from "./migrations";
 import { StorageError, ValidationError, logError } from "../utils/errors";

@@ -90,21 +90,6 @@ export function formatRON(value: number): string {
 }
 
 /**
- * Format RON without decimal places (for compact display, e.g. upcoming payments)
- * Example: 1234.56 -> "1.235 RON"
- */
-export function formatRONCompact(value: number): string {
-  if (isNaN(value) || !isFinite(value)) return "0 RON";
-
-  return new Intl.NumberFormat("ro-RO", {
-    style: "currency",
-    currency: "RON",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(Math.round(value));
-}
-
-/**
  * Parse a RON-formatted string to a number
  * Handles both formats: "1234.56" and "1.234,56"
  * Strips "RON" text and parses correctly

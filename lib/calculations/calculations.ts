@@ -4,6 +4,7 @@
  */
 
 import type { CategoryAmounts } from "../types";
+import { createDefaultCategoryAmounts } from "../validation/schemas";
 
 /**
  * Calculate total income
@@ -126,34 +127,7 @@ export function combineCategoryAmounts(
  */
 export function sumCategoryAmounts(items: CategoryAmounts[]): CategoryAmounts {
   if (items.length === 0) {
-    return {
-      venit: 0,
-      bonuri: 0,
-      extra: 0,
-      rate: 0,
-      apple: 0,
-      intretinere: 0,
-      internet: 0,
-      gaz: 0,
-      curent: 0,
-      telefon: 0,
-      netflix: 0,
-      sala: 0,
-      educatie: 0,
-      sanatate: 0,
-      beauty: 0,
-      haine: 0,
-      diverse: 0,
-      transport: 0,
-      cadouri: 0,
-      vacante: 0,
-      casa: 0,
-      gadgets: 0,
-      tazz: 0,
-      alimente: 0,
-      economii: 0,
-      investitii: 0,
-    };
+    return createDefaultCategoryAmounts();
   }
   return items.reduce((acc, curr) => {
     return {
