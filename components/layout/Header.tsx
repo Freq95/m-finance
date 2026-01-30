@@ -1,27 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import type { PersonView } from "@/lib/types";
-import { Search, Calendar, Bell, User, Settings, Moon, Sun } from "lucide-react";
+import { Calendar, Bell, User, Settings, Moon, Sun, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import Link from "next/link";
-
-const personOptions: { value: PersonView; label: string }[] = [
-  { value: "me", label: "Paul" },
-  { value: "wife", label: "Codru" },
-  { value: "combined", label: "Împreună" },
-];
+import { useDuePaymentsNotification } from "@/lib/useDuePaymentsNotification";
+import { DuePaymentsModal } from "@/components/shared/DuePaymentsModal";
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/": { title: "Dashboard", subtitle: "Payments updates" },
   "/monthly-input": { title: "Monthly Input", subtitle: "Enter monthly data" },
-  "/settings": { title: "Settings", subtitle: "Preferences" },
 };
 
 function getPageMeta(pathname: string) {
-  for (const path of ["/monthly-input", "/settings", "/"]) {
+  for (const path of ["/monthly-input", "/"]) {
     if (path === "/" ? pathname === "/" : pathname.startsWith(path))
       return pageTitles[path];
   }
@@ -30,20 +24,30 @@ function getPageMeta(pathname: string) {
 
 export function Header({
   onOpenSettings,
+  onOpenCalendar,
 }: {
-  onOpenSettings?: () => void;
+  onOpenSettings: () => void;
+  onOpenCalendar?: () => void;
 }) {
   const pathname = usePathname();
+  const profiles = useFinanceStore((s) => s.profiles);
   const selectedPerson = useFinanceStore((s) => s.selectedPerson);
   const setSelectedPerson = useFinanceStore((s) => s.setSelectedPerson);
   const theme = useFinanceStore((s) => s.theme);
+  const personOptions: { value: PersonView; label: string }[] = [
+    ...profiles.map((p) => ({ value: p.id as PersonView, label: p.name })),
+    { value: "combined", label: "Împreună" },
+  ];
   const toggleTheme = useFinanceStore((s) => s.toggleTheme);
   const exchangeRates = useFinanceStore((s) => s.exchangeRates);
   const { title, subtitle } = getPageMeta(pathname);
 
+  const { toShow, summary, handleDismiss, duePayments, formatDate } = useDuePaymentsNotification();
+  const [duePaymentsModalOpen, setDuePaymentsModalOpen] = useState(false);
+
   return (
-    <header className="h-16 shrink-0 glass-panel border-b border-white/20 dark:border-white/10 px-6 flex items-center gap-6 rounded-none">
-      <div className="flex min-w-0 flex-1 items-center gap-8">
+    <header className="h-16 shrink-0 glass-panel border-b border-white/20 dark:border-white/10 px-6 grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-none">
+      <div className="flex min-w-0 items-center gap-8">
         <div className="shrink-0">
           <h1 className="text-[22px] font-semibold text-textPrimary tracking-tight truncate dark:text-white">
             {title}
@@ -52,19 +56,62 @@ export function Header({
             {subtitle}
           </p>
         </div>
-        <div className="hidden md:block flex-1 max-w-sm">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-textMuted dark:text-gray-300" />
-            <Input
-              type="search"
-              placeholder="Search"
-              className="pl-9 h-9 glass-surface rounded-xl text-sm border-white/20 dark:border-white/10"
-              aria-label="Search"
-            />
-          </div>
-        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+
+      <div className="flex justify-center items-center min-w-0 max-w-[min(420px,55vw)]">
+        {toShow.length > 0 ? (
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setDuePaymentsModalOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setDuePaymentsModalOpen(true);
+              }
+            }}
+            className={cn(
+              "flex items-center gap-2 rounded-xl border border-accentOrange/30 dark:border-accentOrange/40",
+              "bg-accentOrange/10 dark:bg-accentOrange/20 backdrop-blur-sm pl-3 pr-2 py-2 text-sm",
+              "text-textPrimary dark:text-white shadow-soft min-w-0 cursor-pointer",
+              "hover:bg-accentOrange/15 dark:hover:bg-accentOrange/25 transition-colors"
+            )}
+            aria-label="Vezi plăți viitoare"
+          >
+            <Bell className="h-4 w-4 shrink-0 text-accentOrange dark:text-accentOrange" aria-hidden />
+            <span className="min-w-0 break-words line-clamp-2">{summary}</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDismiss();
+              }}
+              className="shrink-0 rounded-lg p-1 text-textSecondary hover:text-textPrimary hover:bg-white/60 dark:hover:bg-white/10"
+              aria-label="Închide notificare"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setDuePaymentsModalOpen(true)}
+            className="relative rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
+            aria-label="Notificări plăți viitoare"
+          >
+            <Bell className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+
+      <DuePaymentsModal
+        open={duePaymentsModalOpen}
+        onOpenChange={setDuePaymentsModalOpen}
+        payments={duePayments}
+        formatDate={formatDate}
+      />
+
+      <div className="flex shrink-0 items-center justify-end gap-2">
         {!pathname.startsWith("/monthly-input") &&
           pathname !== "/" &&
           !pathname.startsWith("/settings") && (
@@ -116,21 +163,11 @@ export function Header({
         </div>
         <button
           type="button"
+          onClick={onOpenCalendar ?? undefined}
           className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
           aria-label="Calendar"
         >
           <Calendar className="h-5 w-5" />
-        </button>
-        <button
-          type="button"
-          className="relative rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
-          aria-label="Notifications"
-        >
-          <Bell className="h-5 w-5" />
-          <span
-            className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"
-            aria-hidden="true"
-          />
         </button>
         <button
           type="button"
@@ -148,24 +185,14 @@ export function Header({
             <Moon className="h-5 w-5" />
           )}
         </button>
-        {onOpenSettings ? (
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
-            aria-label="Settings"
-          >
-            <Settings className="h-5 w-5" />
-          </button>
-        ) : (
-          <Link
-            href="/settings"
-            className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
-            aria-label="Settings"
-          >
-            <Settings className="h-5 w-5" />
-          </Link>
-        )}
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
+          aria-label="Settings"
+        >
+          <Settings className="h-5 w-5" />
+        </button>
         <span className="relative shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-accentPrimary text-white shadow-soft dark:bg-blue-500 border border-white/20">
           <User className="h-4 w-4" />
           <span

@@ -52,6 +52,8 @@ export function RightSidebar() {
   const upcomingPayments = useFinanceStore((s) => s.upcomingPayments);
   const displayCurrency = useFinanceStore((s) => s.displayCurrency);
   const exchangeRates = useFinanceStore((s) => s.exchangeRates);
+  const decimalPlaces = useFinanceStore((s) => s.settings.decimalPlaces);
+  const dateLocale = useFinanceStore((s) => s.settings.dateLocale);
 
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<UpcomingPayment | null>(
@@ -97,7 +99,7 @@ export function RightSidebar() {
         : latestRecord.people[selectedPerson];
   const recentActivities = getTopSpendingCategories(dataForPerson, 4);
   const activitiesDate = latestRecord
-    ? formatMonthShort(latestRecord.month)
+    ? formatMonthShort(latestRecord.month, dateLocale)
     : "—";
 
   return (
@@ -166,7 +168,7 @@ export function RightSidebar() {
                       </p>
                     </div>
                     <span className="text-sm font-medium text-textPrimary shrink-0 tabular-nums whitespace-nowrap dark:text-gray-100">
-                      {item.cost != null ? formatCurrency(item.cost, displayCurrency, exchangeRates) : "—"}
+                      {item.cost != null ? formatCurrency(item.cost, displayCurrency, exchangeRates, decimalPlaces) : "—"}
                     </span>
                     <button
                       type="button"
@@ -212,7 +214,7 @@ export function RightSidebar() {
                   </p>
                 </div>
                 <span className="text-sm font-medium text-textPrimary shrink-0 tabular-nums dark:text-gray-100">
-                  {formatCurrency(a.amount, displayCurrency, exchangeRates)}
+                  {formatCurrency(a.amount, displayCurrency, exchangeRates, decimalPlaces)}
                 </span>
               </li>
             ))

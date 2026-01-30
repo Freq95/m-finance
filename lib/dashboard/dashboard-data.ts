@@ -17,6 +17,7 @@ import {
   sumCategoryAmounts,
 } from "../calculations/calculations";
 import { formatMonthShort, getMonthsForYear } from "../utils/date";
+import type { DateLocale } from "../utils/date";
 import { CATEGORY_BAR_GROUPS, EXPENSE_PIE_GROUPS } from "../constants";
 import type { ChartDataPoint, CurrentDataPoint } from "./chart-types";
 
@@ -42,7 +43,8 @@ export function buildChartData(
   selectedYear: number,
   selectedPerson: PersonView,
   getCombinedData: (month: MonthString) => CategoryAmounts | null,
-  includeInvestmentsInNetCashflow: boolean
+  includeInvestmentsInNetCashflow: boolean,
+  dateLocale: DateLocale = "ro"
 ): ChartDataPoint[] {
   const monthList = getMonthsForYear(selectedYear);
   return monthList.map((monthStr) => {
@@ -59,9 +61,10 @@ export function buildChartData(
     const cashflow = d
       ? calculateNetCashflow(d, includeInvestmentsInNetCashflow)
       : 0;
+    const short = formatMonthShort(monthStr, dateLocale);
     return {
-      month: formatMonthShort(monthStr).split(" ")[0],
-      full: formatMonthShort(monthStr),
+      month: short.split(" ")[0],
+      full: short,
       monthStr,
       income,
       expenses,
@@ -159,52 +162,87 @@ export function buildTopSpendingCategoriesData(
   return spendingByCategoryData.slice(0, 8);
 }
 
-export type PaulVsCodruRow = {
+export type ProfileComparisonRow = {
   metric: string;
-  Paul: number;
-  Codru: number;
+  [profileName: string]: string | number;
 };
 
+/**
+ * Build comparison table data for multiple profiles (columns = profile names).
+ */
+export function buildProfileComparisonData(
+  recordByMonth: Map<string, MonthRecord>,
+  selectedYear: number,
+  profileIds: string[],
+  profileNames: string[],
+  includeInvestmentsInNetCashflow: boolean
+): ProfileComparisonRow[] {
+  const yearMonths = getMonthsForYear(selectedYear);
+  const datasByProfile: CategoryAmounts[][] = profileIds.map(() => []);
+  for (const monthStr of yearMonths) {
+    const record = recordByMonth.get(monthStr);
+    if (record) {
+      profileIds.forEach((id, i) => {
+        const d = record.people[id];
+        if (d) datasByProfile[i].push(d);
+      });
+    }
+  }
+  if (datasByProfile.every((arr) => arr.length === 0)) return [];
+  const aggByProfile = datasByProfile.map((arr) =>
+    arr.length > 0 ? sumCategoryAmounts(arr) : null
+  );
+  const get = (i: number, fn: (d: CategoryAmounts) => number) =>
+    aggByProfile[i] != null ? fn(aggByProfile[i]!) : 0;
+  return [
+    {
+      metric: "Venit",
+      ...Object.fromEntries(
+        profileNames.map((name, i) => [name, get(i, calculateIncomeTotal)])
+      ),
+    },
+    {
+      metric: "Cheltuieli",
+      ...Object.fromEntries(
+        profileNames.map((name, i) => [name, get(i, calculateExpensesTotal)])
+      ),
+    },
+    {
+      metric: "Investiții",
+      ...Object.fromEntries(
+        profileNames.map((name, i) => [name, get(i, calculateInvestmentsTotal)])
+      ),
+    },
+    {
+      metric: "Cashflow net",
+      ...Object.fromEntries(
+        profileNames.map((name, i) => [
+          name,
+          aggByProfile[i] != null
+            ? calculateNetCashflow(
+                aggByProfile[i]!,
+                includeInvestmentsInNetCashflow
+              )
+            : 0,
+        ])
+      ),
+    },
+  ];
+}
+
+/** @deprecated Use buildProfileComparisonData with profiles from store. */
 export function buildPaulVsCodruData(
   recordByMonth: Map<string, MonthRecord>,
   selectedYear: number,
   includeInvestmentsInNetCashflow: boolean
-): PaulVsCodruRow[] {
-  const yearMonths = getMonthsForYear(selectedYear);
-  const meDatas: CategoryAmounts[] = [];
-  const wifeDatas: CategoryAmounts[] = [];
-  for (const monthStr of yearMonths) {
-    const record = recordByMonth.get(monthStr);
-    if (record) {
-      meDatas.push(record.people.me);
-      wifeDatas.push(record.people.wife);
-    }
-  }
-  if (meDatas.length === 0) return [];
-  const meAgg = sumCategoryAmounts(meDatas);
-  const wifeAgg = sumCategoryAmounts(wifeDatas);
-  return [
-    {
-      metric: "Venit",
-      Paul: calculateIncomeTotal(meAgg),
-      Codru: calculateIncomeTotal(wifeAgg),
-    },
-    {
-      metric: "Cheltuieli",
-      Paul: calculateExpensesTotal(meAgg),
-      Codru: calculateExpensesTotal(wifeAgg),
-    },
-    {
-      metric: "Investiții",
-      Paul: calculateInvestmentsTotal(meAgg),
-      Codru: calculateInvestmentsTotal(wifeAgg),
-    },
-    {
-      metric: "Cashflow net",
-      Paul: calculateNetCashflow(meAgg, includeInvestmentsInNetCashflow),
-      Codru: calculateNetCashflow(wifeAgg, includeInvestmentsInNetCashflow),
-    },
-  ];
+): ProfileComparisonRow[] {
+  return buildProfileComparisonData(
+    recordByMonth,
+    selectedYear,
+    ["me", "wife"],
+    ["Paul", "Codru"],
+    includeInvestmentsInNetCashflow
+  );
 }
 
 /** Domain max for Y axis: 15% headroom, capped at 10M to avoid huge scales. */

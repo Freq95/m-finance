@@ -14,13 +14,16 @@ import { formatMonthShort, monthStringToDate, monthStringFromDate } from "@/lib/
 import type { MonthString } from "@/lib/types";
 import { ChevronDown } from "lucide-react";
 
+export type DateLocale = import("@/lib/utils/date").DateLocale;
+
 interface MonthPickerProps {
   value: MonthString;
   onChange: (month: MonthString) => void;
   className?: string;
+  dateLocale?: DateLocale;
 }
 
-export function MonthPicker({ value, onChange, className }: MonthPickerProps) {
+export function MonthPicker({ value, onChange, className, dateLocale = "ro" }: MonthPickerProps) {
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<Date>(() => monthStringToDate(value));
 
@@ -41,7 +44,7 @@ export function MonthPicker({ value, onChange, className }: MonthPickerProps) {
         onClick={() => setOpen(true)}
         className={className}
       >
-        {formatMonthShort(value)}
+        {formatMonthShort(value, dateLocale)}
         <ChevronDown className="ml-2 h-4 w-4 text-textMuted dark:text-white" />
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>

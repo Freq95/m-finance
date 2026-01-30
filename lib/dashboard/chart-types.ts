@@ -57,14 +57,14 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     key: "bills",
     label: "Total facturi",
     icon: Receipt,
-    color: "text-textPrimary",
+    color: "text-accentOrange",
     getValue: (d) => d.bills,
   },
   {
     key: "expenses",
     label: "Cheltuieli totale",
     icon: Wallet,
-    color: "text-textPrimary",
+    color: "text-accentOrange",
     getValue: (d) => d.expenses,
   },
   {

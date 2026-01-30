@@ -1,27 +1,39 @@
 /**
  * Date Formatting Utilities
- * Romanian locale support using date-fns
+ * Romanian and English locale support using date-fns
  */
 
 import { format, parse } from "date-fns";
 import { ro } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
+import type { Locale } from "date-fns";
 import type { MonthString } from "../types";
+
+export type DateLocale = "ro" | "en";
+
+const dateFnsLocales: Record<DateLocale, Locale> = { ro, en: enUS };
 
 /**
  * Format a month string for display
- * Example: "2026-01" -> "Ian 2026"
+ * Example: "2026-01" -> "Ian 2026" (ro) or "January 2026" (en)
  */
-export function formatMonthDisplay(monthString: MonthString): string {
+export function formatMonthDisplay(
+  monthString: MonthString,
+  locale: DateLocale = "ro"
+): string {
   const date = parse(monthString + "-01", "yyyy-MM-dd", new Date());
-  return format(date, "LLL yyyy", { locale: ro });
+  return format(date, "LLL yyyy", { locale: dateFnsLocales[locale] });
 }
 
 /**
- * Format short (e.g. "Ian 2026")
+ * Format short (e.g. "Ian 2026" or "Jan 2026")
  */
-export function formatMonthShort(monthString: MonthString): string {
+export function formatMonthShort(
+  monthString: MonthString,
+  locale: DateLocale = "ro"
+): string {
   const date = parse(monthString + "-01", "yyyy-MM-dd", new Date());
-  return format(date, "MMM yyyy", { locale: ro });
+  return format(date, "MMM yyyy", { locale: dateFnsLocales[locale] });
 }
 
 /**
@@ -130,6 +142,20 @@ export function monthStringForYear(year: number): MonthString {
  */
 export function isValidMonthString(value: string): value is MonthString {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
+
+/**
+ * Format a date string (YYYY-MM-DD) for display, e.g. "30 Ian 2026" (ro) or "Jan 30, 2026" (en).
+ */
+export function formatDateDisplay(
+  isoDate: string,
+  locale: DateLocale = "ro"
+): string {
+  const date = parse(isoDate, "yyyy-MM-dd", new Date());
+  if (locale === "ro") {
+    return format(date, "d MMM yyyy", { locale: dateFnsLocales[locale] });
+  }
+  return format(date, "MMM d, yyyy", { locale: dateFnsLocales[locale] });
 }
 
 /**

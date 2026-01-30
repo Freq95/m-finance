@@ -9,19 +9,22 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ConfirmationModal } from "@/components/shared/ConfirmationModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { Select } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
+import { cn } from "@/lib/utils";
 
 interface UpcomingPaymentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** When set, edit mode; otherwise create mode */
   editItem: UpcomingPayment | null;
+  /** Pre-filled date when adding (YYYY-MM-DD). Used when opening from calendar day click. */
+  initialDate?: string;
 }
 
 const defaultForm = (): {
@@ -30,7 +33,7 @@ const defaultForm = (): {
   date: string;
   cost: number;
 } => ({
-  icon: "Receipt",
+  icon: "Home",
   title: "",
   date: new Date().toISOString().slice(0, 10),
   cost: 0,
@@ -40,27 +43,39 @@ export function UpcomingPaymentModal({
   open,
   onOpenChange,
   editItem,
+  initialDate,
 }: UpcomingPaymentModalProps) {
   const addUpcomingPayment = useFinanceStore((s) => s.addUpcomingPayment);
   const updateUpcomingPayment = useFinanceStore((s) => s.updateUpcomingPayment);
   const removeUpcomingPayment = useFinanceStore((s) => s.removeUpcomingPayment);
+  const dateLocale = useFinanceStore((s) => s.settings.dateLocale);
 
   const [form, setForm] = React.useState(defaultForm);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+
+  const migrateIcon = (icon: string): UpcomingPaymentIconId => {
+    if (icon === "Receipt") return "Wallet";
+    if (icon === "Calendar") return "Home";
+    return icon as UpcomingPaymentIconId;
+  };
 
   React.useEffect(() => {
     if (open) {
       if (editItem) {
         setForm({
-          icon: editItem.icon,
+          icon: migrateIcon(editItem.icon),
           title: editItem.title,
           date: editItem.date,
           cost: editItem.cost ?? 0,
         });
       } else {
-        setForm(defaultForm());
+        setForm({
+          ...defaultForm(),
+          date: initialDate ?? defaultForm().date,
+        });
       }
     }
-  }, [open, editItem]);
+  }, [open, editItem, initialDate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,60 +94,56 @@ export function UpcomingPaymentModal({
     onOpenChange(false);
   };
 
-  const handleDelete = () => {
+  const handleDeleteConfirm = () => {
     if (editItem) {
       removeUpcomingPayment(editItem.id);
       onOpenChange(false);
     }
   };
 
-  const SelectedIcon = UPCOMING_PAYMENT_ICONS.find((o) => o.id === form.icon)
-    ?.Icon ?? UPCOMING_PAYMENT_ICONS[0].Icon;
-
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
-          <DialogTitle className="text-textPrimary">
+          <DialogTitle className="text-textPrimary dark:text-white">
             {editItem ? "Editează plata" : "Plată viitoare"}
           </DialogTitle>
-          <DialogDescription className="text-textSecondary">
-            {editItem
-              ? "Modifică detaliile plății."
-              : "Adaugă o plată viitoare (titlu, dată, sumă opțională)."}
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-textPrimary">
+            <label className="mb-1.5 block text-sm font-medium text-textPrimary dark:text-white">
               Icon
             </label>
-            <Select
-              value={form.icon}
-              onChange={(e) =>
-                setForm((p) => ({
-                  ...p,
-                  icon: e.target.value as UpcomingPaymentIconId,
-                }))
-              }
-              className="w-full"
-            >
-              {UPCOMING_PAYMENT_ICONS.map(({ id, label }) => (
-                <option key={id} value={id}>
-                  {label}
-                </option>
-              ))}
-            </Select>
-            <div className="mt-2 flex justify-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/[0.06]">
-                <SelectedIcon className="h-5 w-5 text-textSecondary" />
-              </div>
+            <div className="mt-2 grid grid-cols-5 gap-1.5">
+              {UPCOMING_PAYMENT_ICONS.map(({ id, Icon, label }) => {
+                const isSelected = form.icon === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() =>
+                      setForm((p) => ({ ...p, icon: id }))
+                    }
+                    className={cn(
+                      "flex items-center justify-center h-11 w-11 rounded-full border transition-colors shrink-0",
+                      isSelected
+                        ? "bg-accentPrimary text-white border-accentPrimary dark:bg-accentPrimary dark:text-white dark:border-accentPrimary"
+                        : "bg-black/[0.06] dark:bg-white/10 border-transparent hover:bg-black/[0.1] dark:hover:bg-white/20 text-textSecondary dark:text-gray-300"
+                    )}
+                    aria-label={label}
+                    title={label}
+                  >
+                    <Icon className="h-6 w-6" />
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-textPrimary">
+            <label className="mb-1.5 block text-sm font-medium text-textPrimary dark:text-white">
               Titlu
             </label>
             <Input
@@ -144,19 +155,21 @@ export function UpcomingPaymentModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-textPrimary">
+            <label className="mb-1.5 block text-sm font-medium text-textPrimary dark:text-white">
               Data
             </label>
-            <Input
-              type="date"
+            <DatePicker
               value={form.date}
-              onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
+              onChange={(date) => setForm((p) => ({ ...p, date }))}
+              locale={dateLocale}
+              placeholder="Selectează data"
               required
+              name="date"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-textPrimary">
+            <label className="mb-1.5 block text-sm font-medium text-textPrimary dark:text-white">
               Sumă (opțional)
             </label>
             <CurrencyInput
@@ -164,7 +177,7 @@ export function UpcomingPaymentModal({
               onChange={(v) => setForm((p) => ({ ...p, cost: v }))}
               placeholder="0"
             />
-            <p className="mt-1 text-xs text-textSecondary">
+            <p className="mt-1 text-xs text-textSecondary dark:text-gray-300">
               Lasă 0 dacă nu știi încă suma.
             </p>
           </div>
@@ -175,7 +188,7 @@ export function UpcomingPaymentModal({
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={handleDelete}
+                  onClick={() => setDeleteConfirmOpen(true)}
                   className="text-accentNegative hover:bg-accentNegative/10"
                 >
                   Șterge
@@ -198,5 +211,16 @@ export function UpcomingPaymentModal({
         </form>
       </DialogContent>
     </Dialog>
+
+    <ConfirmationModal
+      open={deleteConfirmOpen}
+      onOpenChange={setDeleteConfirmOpen}
+      title="Ștergi această plată viitoare?"
+      description="Plata va fi ștearsă definitiv. Nu poți reveni."
+      confirmLabel="Șterge"
+      onConfirm={handleDeleteConfirm}
+      variant="danger"
+    />
+  </>
   );
 }

@@ -31,6 +31,7 @@ export function UpcomingPaymentViewModal({
 }: UpcomingPaymentViewModalProps) {
   const displayCurrency = useFinanceStore((s) => s.displayCurrency);
   const exchangeRates = useFinanceStore((s) => s.exchangeRates);
+  const decimalPlaces = useFinanceStore((s) => s.settings.decimalPlaces);
 
   if (!item) return null;
 
@@ -81,7 +82,7 @@ export function UpcomingPaymentViewModal({
               Sumă
             </p>
             <p className="text-sm text-textPrimary dark:text-white tabular-nums">
-              {item.cost != null ? formatCurrency(item.cost, displayCurrency, exchangeRates) : "— (necunoscută)"}
+              {item.cost != null ? formatCurrency(item.cost, displayCurrency, exchangeRates, decimalPlaces) : "— (necunoscută)"}
             </p>
           </div>
         </div>

@@ -7,7 +7,7 @@ import type { StorageSchema, MonthRecord } from "../types";
 import { StorageSchema as StorageSchemaZod } from "../validation/schemas";
 import { logError } from "../utils/errors";
 
-const CURRENT_VERSION = 2;
+const CURRENT_VERSION = 3;
 
 /**
  * Migrate data from an older version to the current version
@@ -23,19 +23,24 @@ export function migrateData(data: unknown): StorageSchema {
     if (typeof data === "object" && data !== null) {
       const versioned = data as { version?: number; [key: string]: unknown };
 
-      // Version 2 (current)
+      // Version 3 (current) — validate only
+      if (versioned.version === 3) {
+        return migrateV3ToV3(versioned);
+      }
+
+      // Version 2 (people: { me, wife }) -> v3 (people: Record<ProfileId, CategoryAmounts>)
       if (versioned.version === 2) {
-        return migrateV2ToV2(versioned);
+        return migrateV2ToV3(versioned);
       }
 
-      // Version 1 (economii_investitii) -> v2 (economii + investitii)
+      // Version 1 (economii_investitii) -> v2 -> v3
       if (versioned.version === 1) {
-        return migrateV1ToV2(versioned);
+        return migrateV2ToV3(migrateV1ToV2(versioned));
       }
 
-      // Legacy format (no version) - treat as v0, then v1->v2
+      // Legacy format (no version) - treat as v0, then v1->v2->v3
       if (!versioned.version) {
-        return migrateV1ToV2(migrateV0ToV1(versioned));
+        return migrateV2ToV3(migrateV1ToV2(migrateV0ToV1(versioned)));
       }
     }
 
@@ -102,8 +107,8 @@ function migrateV1ToV2(data: { version?: number; data?: unknown }): StorageSchem
         investitii: (rest.investitii as number) ?? 0,
       };
     };
-    const me = migratePerson(r.people.me) as MonthRecord["people"]["me"];
-    const wife = migratePerson(r.people.wife) as MonthRecord["people"]["wife"];
+    const me = migratePerson(r.people.me) as import("../types").CategoryAmounts;
+    const wife = migratePerson(r.people.wife) as import("../types").CategoryAmounts;
     const result = StorageSchemaZod.shape.data.element.safeParse({
       month: r.month,
       people: { me, wife },
@@ -112,13 +117,42 @@ function migrateV1ToV2(data: { version?: number; data?: unknown }): StorageSchem
     if (result.success) validRecords.push(result.data);
     else logError(`Invalid record after migration: ${r.month}`, "migrateV1ToV2");
   }
+  return { version: 2, data: validRecords };
+}
+
+/**
+ * Migrate from v2 (people: { me, wife }) to v3 (people: Record<ProfileId, CategoryAmounts>)
+ */
+function migrateV2ToV3(data: { version?: number; data?: unknown }): StorageSchema {
+  if (!Array.isArray(data.data)) {
+    return { version: CURRENT_VERSION, data: [] };
+  }
+  const validRecords: MonthRecord[] = [];
+  for (const record of data.data as unknown[]) {
+    const r = record as {
+      month: string;
+      people: { me?: Record<string, unknown>; wife?: Record<string, unknown> };
+      meta: { updatedAt: string; isSaved: boolean };
+    };
+    if (!r?.people) continue;
+    const peopleRecord: Record<string, import("../types").CategoryAmounts> = {};
+    if (r.people.me) peopleRecord["me"] = r.people.me as import("../types").CategoryAmounts;
+    if (r.people.wife) peopleRecord["wife"] = r.people.wife as import("../types").CategoryAmounts;
+    const result = StorageSchemaZod.shape.data.element.safeParse({
+      month: r.month,
+      people: peopleRecord,
+      meta: r.meta,
+    });
+    if (result.success) validRecords.push(result.data);
+    else logError(`Invalid record after v2→v3 migration: ${r.month}`, "migrateV2ToV3");
+  }
   return { version: CURRENT_VERSION, data: validRecords };
 }
 
 /**
- * Migrate from v2 to v2 (validation/cleanup)
+ * Validate v3 schema (cleanup)
  */
-function migrateV2ToV2(data: { version?: number; data?: unknown }): StorageSchema {
+function migrateV3ToV3(data: { version?: number; data?: unknown }): StorageSchema {
   if (Array.isArray(data.data)) {
     const validRecords: MonthRecord[] = [];
     for (const record of data.data) {
@@ -126,7 +160,7 @@ function migrateV2ToV2(data: { version?: number; data?: unknown }): StorageSchem
       if (result.success) {
         validRecords.push(result.data);
       } else {
-        logError(`Invalid record skipped: ${JSON.stringify(record)}`, "migrateV2ToV2");
+        logError(`Invalid record skipped: ${JSON.stringify(record)}`, "migrateV3ToV3");
       }
     }
     return {

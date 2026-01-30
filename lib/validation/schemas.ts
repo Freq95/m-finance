@@ -49,10 +49,7 @@ export const CategoryAmountsSchema = z.object({
 
 export const MonthRecordSchema = z.object({
   month: z.string().regex(monthStringRegex) as z.ZodType<MonthString>,
-  people: z.object({
-    me: CategoryAmountsSchema,
-    wife: CategoryAmountsSchema,
-  }),
+  people: z.record(z.string(), CategoryAmountsSchema),
   meta: z.object({
     updatedAt: z.string().datetime(),
     isSaved: z.boolean(),

@@ -3,7 +3,13 @@
  * Sections and Romanian labels matching design
  */
 
-import type { CategoryAmounts } from "./types";
+import type { CategoryAmounts, Profile } from "./types";
+
+/** Default profiles after migration or clear data (v3). */
+export const DEFAULT_PROFILES: Profile[] = [
+  { id: "me", name: "Paul" },
+  { id: "wife", name: "Codru" },
+];
 
 type CategoryKey = keyof CategoryAmounts;
 
@@ -74,6 +80,7 @@ export const CATEGORY_SECTIONS: CategorySection[] = [
   },
 ];
 
+/** @deprecated Use store profiles (profiles[].name) for display. Kept for tests/fallback. */
 export const PERSON_LABELS = {
   me: "Paul",
   wife: "Codru",

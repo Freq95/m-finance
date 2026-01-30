@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   FilePenLine,
-  Settings,
   Menu,
   X,
 } from "lucide-react";
@@ -15,7 +14,6 @@ import { useState } from "react";
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Monthly input", href: "/monthly-input", icon: FilePenLine, badge: 2 },
-  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {

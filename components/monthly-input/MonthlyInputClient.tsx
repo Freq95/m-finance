@@ -4,8 +4,7 @@ import * as React from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import { createDefaultCategoryAmounts } from "@/lib/validation/schemas";
-import type { CategoryAmounts, MonthString } from "@/lib/types";
-import type { Person } from "@/lib/types";
+import type { CategoryAmounts, MonthString, ProfileId } from "@/lib/types";
 import {
   getPreviousMonth,
   getNextMonth,
@@ -15,25 +14,18 @@ import {
 } from "@/lib/utils/date";
 import { format, parseISO } from "date-fns";
 import {
-  combineCategoryAmounts,
+  sumCategoryAmounts,
   calculateIncomeTotal,
   calculateBillsTotal,
   calculateExpensesTotal,
   calculateNetCashflow,
 } from "@/lib/calculations/calculations";
 import { formatRON } from "@/lib/utils/currency";
-import { CATEGORY_SECTIONS, PERSON_LABELS } from "@/lib/constants";
+import { CATEGORY_SECTIONS } from "@/lib/constants";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { ConfirmationModal } from "@/components/shared/ConfirmationModal";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
 import { SegmentDivider, segmentPanelStyles } from "@/components/shared/SegmentPanel";
@@ -52,19 +44,14 @@ export function MonthlyInputClient() {
   const getCurrentMonthRecord = useFinanceStore((s) => s.getCurrentMonthRecord);
   const updateMonthFull = useFinanceStore((s) => s.updateMonthFull);
   const saveMonth = useFinanceStore((s) => s.saveMonth);
+  const profiles = useFinanceStore((s) => s.profiles);
   const duplicateMonth = useFinanceStore((s) => s.duplicateMonth);
   const resetMonth = useFinanceStore((s) => s.resetMonth);
   const isLoading = useFinanceStore((s) => s.isLoading);
   const isSaving = useFinanceStore((s) => s.isSaving);
   const settings = useFinanceStore((s) => s.settings);
 
-  const [formData, setFormData] = React.useState<{
-    me: CategoryAmounts;
-    wife: CategoryAmounts;
-  }>(() => {
-    const def = createDefaultCategoryAmounts();
-    return { me: { ...def }, wife: { ...def } };
-  });
+  const [formData, setFormData] = React.useState<Record<ProfileId, CategoryAmounts>>({});
   const formDataRef = React.useRef(formData);
   formDataRef.current = formData;
 
@@ -75,23 +62,22 @@ export function MonthlyInputClient() {
   const initFromStore = React.useCallback(() => {
     const r = getCurrentMonthRecord();
     const def = createDefaultCategoryAmounts();
-    if (!r) {
-      setFormData({ me: { ...def }, wife: { ...def } });
-      return;
+    const next: Record<ProfileId, CategoryAmounts> = {};
+    for (const p of profiles) {
+      next[p.id] = r?.people[p.id]
+        ? { ...r.people[p.id] }
+        : { ...def };
     }
-    setFormData({
-      me: { ...r.people.me },
-      wife: { ...r.people.wife },
-    });
-  }, [getCurrentMonthRecord]);
+    setFormData(next);
+  }, [getCurrentMonthRecord, profiles]);
 
   React.useEffect(() => {
     loadRecords();
   }, [loadRecords]);
 
   React.useEffect(() => {
-    initFromStore();
-  }, [selectedMonth, initKey, initFromStore]);
+    if (profiles.length > 0) initFromStore();
+  }, [selectedMonth, initKey, initFromStore, profiles.length]);
 
   const flush = useDebouncedCallback(
     () => {
@@ -102,10 +88,10 @@ export function MonthlyInputClient() {
   );
 
   const updateField = React.useCallback(
-    (person: Person, key: keyof CategoryAmounts, value: number) => {
+    (person: ProfileId, key: keyof CategoryAmounts, value: number) => {
       setFormData((prev) => ({
         ...prev,
-        [person]: { ...prev[person], [key]: value },
+        [person]: { ...(prev[person] ?? createDefaultCategoryAmounts()), [key]: value },
       }));
       flush();
     },
@@ -137,7 +123,12 @@ export function MonthlyInputClient() {
   };
 
   const record = getCurrentMonthRecord();
-  const combinedForFooter = combineCategoryAmounts(formData.me, formData.wife);
+  const combinedForFooter =
+    profiles.length > 0
+      ? sumCategoryAmounts(
+          profiles.map((p) => formData[p.id] ?? createDefaultCategoryAmounts())
+        )
+      : createDefaultCategoryAmounts();
   const includeInvestmentsInNetCashflow = settings.includeInvestmentsInNetCashflow;
 
   if (isLoading) {
@@ -147,6 +138,23 @@ export function MonthlyInputClient() {
       </div>
     );
   }
+
+  if (profiles.length === 0) {
+    return (
+      <div className="space-y-6 pb-32">
+        <div className="rounded-2xl glass-panel shadow-soft p-8 text-center">
+          <p className="text-textSecondary dark:text-gray-300 mb-2">
+            Nu există profiluri. Adaugă cel puțin un profil în Setări pentru a introduce date.
+          </p>
+          <p className="text-sm text-textSecondary dark:text-gray-400">
+            Deschide Setări (icon roată) și secțiunea &quot;Profiles&quot; → Adaugă profil.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const gridTemplateColumns = `minmax(0,1fr) ${profiles.map(() => "minmax(140px,1fr)").join(" ")}`;
 
   return (
     <div className="space-y-6 pb-32">
@@ -158,10 +166,6 @@ export function MonthlyInputClient() {
           retryLabel={error === "Failed to save" ? "Salvează din nou" : "Reîncarcă"}
         />
       )}
-      <div>
-        <h1 className="text-h1 text-textPrimary dark:text-white">Monthly Input</h1>
-      </div>
-
       {/* Period + actions — same panel style as Dashboard */}
       <div className="rounded-2xl glass-panel shadow-soft p-4">
         <div className="flex flex-wrap items-center justify-center gap-3 lg:gap-4">
@@ -195,7 +199,7 @@ export function MonthlyInputClient() {
             </button>
             <div className="min-w-[7rem] py-1 text-center">
               <span className="text-base font-medium text-textPrimary dark:text-white">
-                {formatMonthShort(selectedMonth)}
+                {formatMonthShort(selectedMonth, settings.dateLocale)}
               </span>
             </div>
             <button
@@ -272,14 +276,19 @@ export function MonthlyInputClient() {
 
       <Card>
         <CardHeader className="border-b border-white/10 dark:border-white/10 glass-surface rounded-t-2xl px-6 pb-4 pt-6 border-x border-t border-white/10">
-          <div className="grid grid-cols-[minmax(0,1fr)_minmax(140px,1fr)_minmax(140px,1fr)] gap-4 text-label text-textPrimary dark:text-white">
+          <div
+            className="grid gap-4 text-label text-textPrimary dark:text-white"
+            style={{ gridTemplateColumns }}
+          >
             <div aria-hidden />
-            <div className="text-center text-label font-medium tracking-wide text-textPrimary dark:text-white">
-              {PERSON_LABELS.me}
-            </div>
-            <div className="text-center text-label font-medium tracking-wide text-textPrimary dark:text-white">
-              {PERSON_LABELS.wife}
-            </div>
+            {profiles.map((p) => (
+              <div
+                key={p.id}
+                className="text-center text-label font-medium tracking-wide text-textPrimary dark:text-white"
+              >
+                {p.name}
+              </div>
+            ))}
           </div>
         </CardHeader>
         <CardContent className="p-6 pt-5 text-textPrimary dark:text-white">
@@ -299,27 +308,22 @@ export function MonthlyInputClient() {
                 {section.items.map(({ key, label }) => (
                   <div
                     key={key}
-                    className="grid grid-cols-[minmax(0,1fr)_minmax(140px,1fr)_minmax(140px,1fr)] gap-4 items-center py-2.5 px-1 -mx-1 rounded-lg hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-150"
+                    className="grid gap-4 items-center py-2.5 px-1 -mx-1 rounded-lg hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-150"
+                    style={{ gridTemplateColumns }}
                   >
                     <div className="text-sm text-textSecondary dark:text-white/90 min-w-0">
                       {label}
                     </div>
-                    <div className="min-w-0">
-                      <CurrencyInput
-                        value={formData.me[key]}
-                        onChange={(v) => updateField("me", key, v)}
-                        aria-label={`${label} ${PERSON_LABELS.me}`}
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <CurrencyInput
-                        value={formData.wife[key]}
-                        onChange={(v) => updateField("wife", key, v)}
-                        aria-label={`${label} ${PERSON_LABELS.wife}`}
-                        className="w-full"
-                      />
-                    </div>
+                    {profiles.map((p) => (
+                      <div key={p.id} className="min-w-0">
+                        <CurrencyInput
+                          value={(formData[p.id] ?? createDefaultCategoryAmounts())[key]}
+                          onChange={(v) => updateField(p.id, key, v)}
+                          aria-label={`${label} ${p.name}`}
+                          className="w-full"
+                        />
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
@@ -398,44 +402,35 @@ export function MonthlyInputClient() {
         </div>
       </div>
 
-      <Dialog open={dupDialogOpen} onOpenChange={setDupDialogOpen}>
-        <DialogContent onClose={() => setDupDialogOpen(false)}>
-          <DialogHeader>
-            <DialogTitle>Duplică luna anterioară</DialogTitle>
-            <DialogDescription>
-              Copiezi datele din {formatMonthShort(prevMonth)} în{" "}
-              {formatMonthShort(selectedMonth)}. Datele existente pentru{" "}
-              {formatMonthShort(selectedMonth)} vor fi înlocuite.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setDupDialogOpen(false)}>
-              Anulare
-            </Button>
-            <Button onClick={handleDuplicate}>Duplică</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationModal
+        open={dupDialogOpen}
+        onOpenChange={setDupDialogOpen}
+        title="Duplică luna anterioară"
+        description={
+          <>
+            Copiezi datele din {formatMonthShort(prevMonth, settings.dateLocale)} în{" "}
+            {formatMonthShort(selectedMonth, settings.dateLocale)}. Datele existente pentru{" "}
+            {formatMonthShort(selectedMonth, settings.dateLocale)} vor fi înlocuite.
+          </>
+        }
+        confirmLabel="Duplică"
+        onConfirm={handleDuplicate}
+      />
 
-      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-        <DialogContent onClose={() => setResetDialogOpen(false)}>
-          <DialogHeader>
-            <DialogTitle>Resetează luna</DialogTitle>
-            <DialogDescription>
-              Înregistrările pentru {formatMonthShort(selectedMonth)} vor fi
-              șterse și toate valorile vor fi puse la 0. Nu poți reveni.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setResetDialogOpen(false)}>
-              Anulare
-            </Button>
-            <Button variant="danger" onClick={handleReset}>
-              Resetează
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationModal
+        open={resetDialogOpen}
+        onOpenChange={setResetDialogOpen}
+        title="Resetează luna"
+        description={
+          <>
+            Înregistrările pentru {formatMonthShort(selectedMonth, settings.dateLocale)} vor fi
+            șterse și toate valorile vor fi puse la 0. Nu poți reveni.
+          </>
+        }
+        confirmLabel="Resetează"
+        onConfirm={handleReset}
+        variant="danger"
+      />
     </div>
   );
 }

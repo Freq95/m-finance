@@ -21,14 +21,18 @@ export function ronToCurrency(ronValue: number, currency: DisplayCurrency, rates
   return ronValue * rates.eur;
 }
 
+export type DecimalPlaces = 0 | 2;
+
 /**
  * Format a number in the given currency (value is in RON when currency is not RON, use rates to convert).
  * When rates are null and currency is not RON, falls back to RON to avoid showing wrong amounts.
+ * @param decimalPlaces - 0 for whole numbers, 2 for two decimals (default 0)
  */
 export function formatCurrency(
   valueRon: number,
   currency: DisplayCurrency,
-  rates: ExchangeRates | null
+  rates: ExchangeRates | null,
+  decimalPlaces: DecimalPlaces = 0
 ): string {
   const effectiveCurrency =
     currency !== "RON" && !rates ? "RON" : currency;
@@ -39,16 +43,18 @@ export function formatCurrency(
   if (isNaN(value) || !isFinite(value))
     return effectiveCurrency === "RON" ? "0 RON" : `0 ${effectiveCurrency}`;
 
+  const frac = decimalPlaces === 2 ? 2 : 0;
   const opts: Intl.NumberFormatOptions = {
     style: "currency",
     currency: effectiveCurrency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: frac,
+    maximumFractionDigits: frac,
   };
+  const rounded = frac === 2 ? value : Math.round(value);
   return new Intl.NumberFormat(
     effectiveCurrency === "RON" ? "ro-RO" : "en-US",
     opts
-  ).format(Math.round(value));
+  ).format(rounded);
 }
 
 /**

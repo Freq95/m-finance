@@ -5,8 +5,17 @@
 
 export type MonthString = `${number}-${"01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11" | "12"}`;
 
+/** Opaque profile id (e.g. UUID or "me", "wife" for migrated data). */
+export type ProfileId = string;
+
+/** Person view: a single profile or combined. */
+export type PersonView = ProfileId | "combined";
+
+/** Profile with display name. */
+export type Profile = { id: ProfileId; name: string };
+
+/** @deprecated Use ProfileId. Kept for migration/compat. */
 export type Person = "me" | "wife";
-export type PersonView = "me" | "wife" | "combined";
 
 export type CategoryAmounts = {
   // Income
@@ -50,10 +59,8 @@ export type CategoryAmounts = {
 
 export type MonthRecord = {
   month: MonthString;
-  people: {
-    me: CategoryAmounts;
-    wife: CategoryAmounts;
-  };
+  /** Keyed by ProfileId. v3: Record<ProfileId, CategoryAmounts>. */
+  people: Record<ProfileId, CategoryAmounts>;
   meta: {
     updatedAt: string; // ISOString
     isSaved: boolean; // Required, default false
@@ -65,14 +72,19 @@ export type StorageSchema = {
   data: MonthRecord[];
 };
 
+/** Full backup payload (records + profiles). Used for export/import. */
+export type FullBackupSchema = StorageSchema & {
+  profiles?: Profile[];
+};
+
 /** Icon key for Upcoming Payment (must match keys in UPCOMING_PAYMENT_ICONS) */
 export type UpcomingPaymentIconId =
   | "Home"
   | "Car"
   | "CreditCard"
-  | "Receipt"
   | "Wallet"
-  | "Calendar"
+  | "Land"
+  | "Id"
   | "Heart"
   | "Utensils"
   | "ShoppingCart"

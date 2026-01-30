@@ -58,21 +58,11 @@ import {
   chartTooltipContentStyle,
   chartBarCursorStyle,
 } from "@/lib/design-tokens";
-import { PERSON_LABELS } from "@/lib/constants";
 import type { PersonView } from "@/lib/types";
 
 const chartBarCursor = <Rectangle {...chartBarCursorStyle} radius={6} />;
 
-const personOptions = [
-  { value: "me" as PersonView, label: PERSON_LABELS.me },
-  { value: "wife" as PersonView, label: PERSON_LABELS.wife },
-  {
-    value: "combined" as PersonView,
-    label: "Împreună",
-    icon: <Users className="h-4 w-4" aria-hidden />,
-    compact: true,
-  },
-];
+const PROFILE_CHART_COLORS = [colors.accentPositive, colors.accentOrange, colors.accentPrimary, "#6B7280", "#9CA3AF"];
 
 const currencyOptions: { value: DisplayCurrency; label: string; icon: React.ReactNode }[] = [
   { value: "RON", label: "RON", icon: <Landmark className="h-4 w-4" aria-hidden /> },
@@ -109,6 +99,34 @@ export default function Home() {
   const includeInvestmentsInNetCashflow = useFinanceStore(
     (s) => s.settings.includeInvestmentsInNetCashflow
   );
+  const decimalPlaces = useFinanceStore((s) => s.settings.decimalPlaces);
+  const dateLocale = useFinanceStore((s) => s.settings.dateLocale);
+  const records = useFinanceStore((s) => s.records);
+  const profiles = useFinanceStore((s) => s.profiles);
+  const personOptions = [
+    ...profiles.map((p) => ({ value: p.id as PersonView, label: p.name })),
+    {
+      value: "combined" as PersonView,
+      label: "Împreună",
+      icon: <Users className="h-4 w-4" aria-hidden />,
+      compact: true,
+    },
+  ];
+
+  // #region agent log
+  fetch("http://127.0.0.1:7242/ingest/7fcaf6fd-2a4f-4cef-b98e-7aeb9ab2770b", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location: "page.tsx:Home:render",
+      message: "Dashboard render",
+      data: { isLoading, recordsLength: records?.length ?? -1, hasError: !!error },
+      timestamp: Date.now(),
+      sessionId: "debug-session",
+      hypothesisId: "H1,H3,H4",
+    }),
+  }).catch(() => {});
+  // #endregion
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -226,7 +244,7 @@ export default function Home() {
                     {m.label}
                   </p>
                   <p className="text-xl text-textPrimary dark:text-white">
-                    {formatCurrency(val, displayCurrency, exchangeRates)}
+                    {formatCurrency(val, displayCurrency, exchangeRates, decimalPlaces)}
                   </p>
                 </div>
               </div>
@@ -306,7 +324,8 @@ export default function Home() {
                                 {formatCurrency(
                                   d.income,
                                   displayCurrency,
-                                  exchangeRates
+                                  exchangeRates,
+                                  decimalPlaces
                                 )}
                               </span>
                             </p>
@@ -318,7 +337,8 @@ export default function Home() {
                                 {formatCurrency(
                                   d.expenses,
                                   displayCurrency,
-                                  exchangeRates
+                                  exchangeRates,
+                                  decimalPlaces
                                 )}
                               </span>
                             </p>
@@ -334,7 +354,8 @@ export default function Home() {
                                 {formatCurrency(
                                   d.economii ?? 0,
                                   displayCurrency,
-                                  exchangeRates
+                                  exchangeRates,
+                                  decimalPlaces
                                 )}
                               </span>
                             </p>
@@ -346,7 +367,8 @@ export default function Home() {
                                 {formatCurrency(
                                   d.investitii ?? 0,
                                   displayCurrency,
-                                  exchangeRates
+                                  exchangeRates,
+                                  decimalPlaces
                                 )}
                               </span>
                             </p>
@@ -356,7 +378,8 @@ export default function Home() {
                                 {formatCurrency(
                                   d.total,
                                   displayCurrency,
-                                  exchangeRates
+                                  exchangeRates,
+                                  decimalPlaces
                                 )}
                               </span>
                             </p>
@@ -368,7 +391,7 @@ export default function Home() {
                   <Bar
                     dataKey="income"
                     stackId="a"
-                    fill="#6B7280"
+                    fill={colors.accentPositive}
                     name="Venit"
                   >
                     {chartData.map((entry, i) => (
@@ -388,7 +411,7 @@ export default function Home() {
                   <Bar
                     dataKey="expenses"
                     stackId="a"
-                    fill={colors.sidebar}
+                    fill={colors.accentPrimaryActive}
                     name="Cheltuieli"
                   >
                     {chartData.map((entry, i) => (
@@ -497,12 +520,12 @@ export default function Home() {
                   wrapperStyle={chartTooltipWrapperStyle}
                   contentStyle={chartTooltipContentStyle}
                   formatter={(v: number) =>
-                    formatCurrency(v, displayCurrency, exchangeRates)
+                    formatCurrency(v, displayCurrency, exchangeRates, decimalPlaces)
                   }
                 />
                 <Bar
                   dataKey="value"
-                  fill={colors.sidebar}
+                  fill={colors.accentPositive}
                   radius={[4, 4, 0, 0]}
                   name="Sumă"
                 />
@@ -569,7 +592,8 @@ export default function Home() {
                           {formatCurrency(
                             payload[0]?.payload?.income ?? 0,
                             displayCurrency,
-                            exchangeRates
+                            exchangeRates,
+                            decimalPlaces
                           )}
                         </p>
                         <p className="chart-tooltip-row">
@@ -577,7 +601,8 @@ export default function Home() {
                           {formatCurrency(
                             payload[0]?.payload?.expenses ?? 0,
                             displayCurrency,
-                            exchangeRates
+                            exchangeRates,
+                            decimalPlaces
                           )}
                         </p>
                       </div>
@@ -654,7 +679,8 @@ export default function Home() {
                             {formatCurrency(
                               Number(payload[0].value) || 0,
                               displayCurrency,
-                              exchangeRates
+                              exchangeRates,
+                              decimalPlaces
                             )}
                           </p>
                         </div>
@@ -737,12 +763,12 @@ export default function Home() {
             <span className="text-xs font-normal text-textMuted dark:text-white/70 mr-2">
               [4]
             </span>
-            Paul vs Codru
+            Comparație profiluri
           </h3>
           <p className="text-xs text-textSecondary dark:text-white/90 mb-4">
             {periodLabel}
           </p>
-          {paulVsCodruData.length > 0 ? (
+          {paulVsCodruData.length > 0 && profiles.length > 0 ? (
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -773,22 +799,19 @@ export default function Home() {
                     wrapperStyle={chartTooltipWrapperStyle}
                     contentStyle={chartTooltipContentStyle}
                     formatter={(v: number) =>
-                      formatCurrency(v, displayCurrency, exchangeRates)
+                      formatCurrency(v, displayCurrency, exchangeRates, decimalPlaces)
                     }
                   />
                   <Legend />
-                  <Bar
-                    dataKey="Paul"
-                    fill={colors.sidebar}
-                    radius={[0, 4, 4, 0]}
-                    name="Paul"
-                  />
-                  <Bar
-                    dataKey="Codru"
-                    fill={colors.accentOrange}
-                    radius={[0, 4, 4, 0]}
-                    name="Codru"
-                  />
+                  {profiles.map((p, i) => (
+                    <Bar
+                      key={p.id}
+                      dataKey={p.name}
+                      fill={PROFILE_CHART_COLORS[i % PROFILE_CHART_COLORS.length]}
+                      radius={[0, 4, 4, 0]}
+                      name={p.name}
+                    />
+                  ))}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -857,7 +880,8 @@ export default function Home() {
                           {formatCurrency(
                             payload[0].payload?.cashflow ?? 0,
                             displayCurrency,
-                            exchangeRates
+                            exchangeRates,
+                            decimalPlaces
                           )}
                         </p>
                       </div>
@@ -905,7 +929,7 @@ export default function Home() {
                     type="number"
                     tick={{ fontSize: 10, fill: colors.textSecondary }}
                     tickFormatter={(v) =>
-                      formatCurrency(v, displayCurrency, exchangeRates)
+                      formatCurrency(v, displayCurrency, exchangeRates, decimalPlaces)
                     }
                   />
                   <YAxis
@@ -921,12 +945,12 @@ export default function Home() {
                     wrapperStyle={chartTooltipWrapperStyle}
                     contentStyle={chartTooltipContentStyle}
                     formatter={(v: number) =>
-                      formatCurrency(v, displayCurrency, exchangeRates)
+                      formatCurrency(v, displayCurrency, exchangeRates, decimalPlaces)
                     }
                   />
                   <Bar
                     dataKey="value"
-                    fill={colors.sidebar}
+                    fill={colors.accentPositive}
                     radius={[0, 4, 4, 0]}
                     name="Sumă"
                   />
@@ -991,7 +1015,8 @@ export default function Home() {
                           {formatCurrency(
                             payload[0]?.payload?.bills ?? 0,
                             displayCurrency,
-                            exchangeRates
+                            exchangeRates,
+                            decimalPlaces
                           )}
                         </p>
                         <p className="chart-tooltip-row">
@@ -999,7 +1024,8 @@ export default function Home() {
                           {formatCurrency(
                             payload[0]?.payload?.restExpenses ?? 0,
                             displayCurrency,
-                            exchangeRates
+                            exchangeRates,
+                            decimalPlaces
                           )}
                         </p>
                       </div>
@@ -1009,7 +1035,7 @@ export default function Home() {
                 <Bar
                   dataKey="bills"
                   stackId="b"
-                  fill="#1F2937"
+                  fill={colors.accentPositive}
                   name="Facturi"
                 >
                   {chartData.map((entry, i) => (
@@ -1029,7 +1055,7 @@ export default function Home() {
                 <Bar
                   dataKey="restExpenses"
                   stackId="b"
-                  fill="#6B7280"
+                  fill={colors.accentPrimaryActive}
                   name="Alte cheltuieli"
                 >
                   {chartData.map((entry, i) => (
@@ -1088,7 +1114,7 @@ export default function Home() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-textPrimary dark:text-white text-sm">
-                        {formatMonthShort(r.month)}
+                        {formatMonthShort(r.month, dateLocale)}
                       </p>
                       <p className="text-xs text-textSecondary dark:text-white/80">
                         {format(parseISO(r.meta.updatedAt), "hh:mm:ss a", {
@@ -1107,7 +1133,8 @@ export default function Home() {
                       {formatCurrency(
                         cashflow,
                         displayCurrency,
-                        exchangeRates
+                        exchangeRates,
+                        decimalPlaces
                       )}
                     </p>
                     <span
