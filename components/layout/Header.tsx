@@ -4,7 +4,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import type { PersonView } from "@/lib/types";
-import { Calendar, Bell, User, Settings, Moon, Sun, X } from "lucide-react";
+import { Calendar, Bell, User, Settings, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDuePaymentsNotification } from "@/lib/useDuePaymentsNotification";
 import { DuePaymentsModal } from "@/components/shared/DuePaymentsModal";
@@ -42,7 +42,8 @@ export function Header({
   const exchangeRates = useFinanceStore((s) => s.exchangeRates);
   const { title, subtitle } = getPageMeta(pathname);
 
-  const { toShow, summary, handleDismiss, duePayments, formatDate } = useDuePaymentsNotification();
+  const { duePayments, formatDate } = useDuePaymentsNotification();
+  const moveUpcomingToRecent = useFinanceStore((s) => s.moveUpcomingToRecent);
   const [duePaymentsModalOpen, setDuePaymentsModalOpen] = useState(false);
 
   return (
@@ -58,50 +59,28 @@ export function Header({
         </div>
       </div>
 
-      <div className="flex justify-center items-center min-w-0 max-w-[min(420px,55vw)]">
-        {toShow.length > 0 ? (
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => setDuePaymentsModalOpen(true)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                setDuePaymentsModalOpen(true);
-              }
-            }}
+      <div className="flex justify-center items-center min-w-0">
+        <button
+          type="button"
+          onClick={() => setDuePaymentsModalOpen(true)}
+          className={cn(
+            "relative rounded-xl p-2.5 transition-all duration-normal ease-liquid border",
+            duePayments.length > 0
+              ? "border-accentOrange/40 dark:border-accentOrange/50 bg-accentOrange/15 dark:bg-accentOrange/25 hover:bg-accentOrange/20 dark:hover:bg-accentOrange/30"
+              : "glass-surface border-transparent text-textSecondary hover:text-textPrimary hover:bg-white/60 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white hover:border-white/20 dark:hover:border-white/10"
+          )}
+          aria-label={duePayments.length > 0 ? "Vezi plăți viitoare (notificări active)" : "Notificări plăți viitoare"}
+        >
+          <Bell
             className={cn(
-              "flex items-center gap-2 rounded-xl border border-accentOrange/30 dark:border-accentOrange/40",
-              "bg-accentOrange/10 dark:bg-accentOrange/20 backdrop-blur-sm pl-3 pr-2 py-2 text-sm",
-              "text-textPrimary dark:text-white shadow-soft min-w-0 cursor-pointer",
-              "hover:bg-accentOrange/15 dark:hover:bg-accentOrange/25 transition-colors"
+              "h-5 w-5 shrink-0",
+              duePayments.length > 0
+                ? "text-accentOrange dark:text-accentOrange animate-bell-ring"
+                : "text-current"
             )}
-            aria-label="Vezi plăți viitoare"
-          >
-            <Bell className="h-4 w-4 shrink-0 text-accentOrange dark:text-accentOrange" aria-hidden />
-            <span className="min-w-0 break-words line-clamp-2">{summary}</span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDismiss();
-              }}
-              className="shrink-0 rounded-lg p-1 text-textSecondary hover:text-textPrimary hover:bg-white/60 dark:hover:bg-white/10"
-              aria-label="Închide notificare"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setDuePaymentsModalOpen(true)}
-            className="relative rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
-            aria-label="Notificări plăți viitoare"
-          >
-            <Bell className="h-5 w-5" />
-          </button>
-        )}
+            aria-hidden
+          />
+        </button>
       </div>
 
       <DuePaymentsModal
@@ -109,6 +88,7 @@ export function Header({
         onOpenChange={setDuePaymentsModalOpen}
         payments={duePayments}
         formatDate={formatDate}
+        onMarkAsDone={moveUpcomingToRecent}
       />
 
       <div className="flex shrink-0 items-center justify-end gap-2">

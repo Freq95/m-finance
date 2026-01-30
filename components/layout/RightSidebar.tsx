@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import { useFinanceStore } from "@/lib/store/finance-store";
-import { CATEGORY_SECTIONS } from "@/lib/constants";
-import type { CategoryAmounts, UpcomingPayment } from "@/lib/types";
+import type { UpcomingPayment } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/currency";
-import { formatMonthShort } from "@/lib/utils/date";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Undo2, Check, ChevronDown } from "lucide-react";
 import { getUpcomingPaymentIcon } from "@/lib/upcoming-payment-icons";
 import { UpcomingPaymentModal } from "@/components/shared/UpcomingPaymentModal";
 import { UpcomingPaymentViewModal } from "@/components/shared/UpcomingPaymentViewModal";
@@ -14,42 +12,12 @@ import { Button } from "@/components/ui/button";
 import { format, parseISO } from "date-fns";
 import { ro } from "date-fns/locale";
 
-const INCOME_AND_SAVINGS_KEYS = [
-  "venit",
-  "bonuri",
-  "extra",
-  "economii",
-  "investitii",
-] as const;
-
-function getTopSpendingCategories(
-  data: CategoryAmounts | null,
-  limit: number = 4
-): { label: string; amount: number }[] {
-  if (!data) return [];
-  const items = CATEGORY_SECTIONS.flatMap((s) => s.items).filter(
-    (item) =>
-      !INCOME_AND_SAVINGS_KEYS.includes(
-        item.key as (typeof INCOME_AND_SAVINGS_KEYS)[number]
-      )
-  );
-  const withAmounts = items
-    .map((item) => ({
-      label: item.label,
-      amount: (data[item.key] as number) ?? 0,
-    }))
-    .filter((x) => x.amount > 0)
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, limit);
-  return withAmounts;
-}
-
 export function RightSidebar() {
   const selectedPerson = useFinanceStore((s) => s.selectedPerson);
-  const records = useFinanceStore((s) => s.records);
-  const getLast12Months = useFinanceStore((s) => s.getLast12Months);
-  const getCombinedData = useFinanceStore((s) => s.getCombinedData);
   const upcomingPayments = useFinanceStore((s) => s.upcomingPayments);
+  const recentActivitiesFromStore = useFinanceStore((s) => s.recentActivities);
+  const moveUpcomingToRecent = useFinanceStore((s) => s.moveUpcomingToRecent);
+  const moveRecentBackToUpcoming = useFinanceStore((s) => s.moveRecentBackToUpcoming);
   const displayCurrency = useFinanceStore((s) => s.displayCurrency);
   const exchangeRates = useFinanceStore((s) => s.exchangeRates);
   const decimalPlaces = useFinanceStore((s) => s.settings.decimalPlaces);
@@ -62,6 +30,8 @@ export function RightSidebar() {
   const [viewingPayment, setViewingPayment] = useState<UpcomingPayment | null>(
     null
   );
+  const [upcomingOpen, setUpcomingOpen] = useState(true);
+  const [recentOpen, setRecentOpen] = useState(true);
 
   const openAddPayment = () => {
     setEditingPayment(null);
@@ -89,27 +59,25 @@ export function RightSidebar() {
     setPaymentModalOpen(true);
   };
 
-  const last12 = getLast12Months();
-  const latestRecord = last12[0];
-  const dataForPerson =
-    !latestRecord
-      ? null
-      : selectedPerson === "combined"
-        ? getCombinedData(latestRecord.month)
-        : latestRecord.people[selectedPerson];
-  const recentActivities = getTopSpendingCategories(dataForPerson, 4);
-  const activitiesDate = latestRecord
-    ? formatMonthShort(latestRecord.month, dateLocale)
-    : "—";
-
   return (
     <aside className="hidden lg:flex w-[400px] min-w-[400px] shrink-0 flex-col gap-6 glass-panel border-l border-white/20 dark:border-white/10 p-6 overflow-y-auto rounded-none">
       {/* Upcoming payments */}
       <section className="min-w-0">
-        <div className="flex items-center justify-between mb-0.5">
-          <h3 className="text-sm font-medium text-textPrimary dark:text-white">
-            Upcoming Payments
-          </h3>
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setUpcomingOpen((prev) => !prev)}
+            className="flex items-center gap-2 text-sm font-medium text-textPrimary dark:text-white"
+            aria-expanded={upcomingOpen}
+            aria-controls="upcoming-payments-list"
+          >
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${
+                upcomingOpen ? "rotate-0" : "-rotate-90"
+              }`}
+            />
+            <span>Upcoming Payments ({upcomingPayments.length})</span>
+          </button>
           <Button
             type="button"
             variant="secondary"
@@ -121,109 +89,178 @@ export function RightSidebar() {
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-xs text-textSecondary mb-3 dark:text-gray-300">
-          {upcomingPayments.length
-            ? `${upcomingPayments.length} plăți`
-            : "Nicio plată"}
-        </p>
-        <ul className="space-y-2">
-          {upcomingPayments.length ? (
-            upcomingPayments
-              .slice()
-              .sort((a, b) => a.date.localeCompare(b.date))
-              .map((item) => {
-                const Icon = getUpcomingPaymentIcon(item.icon);
+        {upcomingOpen ? (
+          <ul id="upcoming-payments-list" className="space-y-2 mt-3">
+            {upcomingPayments.length ? (
+              upcomingPayments
+                .slice()
+                .sort((a, b) => a.date.localeCompare(b.date))
+                .map((item) => {
+                  const Icon = getUpcomingPaymentIcon(item.icon);
+                  const dateLabel = (() => {
+                    try {
+                      return format(parseISO(item.date), "d MMM yyyy", {
+                        locale: ro,
+                      });
+                    } catch {
+                      return item.date;
+                    }
+                  })();
+                  return (
+                    <li
+                      key={item.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => openViewPayment(item)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          openViewPayment(item);
+                        }
+                      }}
+                      className="flex items-center gap-3 rounded-xl p-3 -mx-1 hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-normal ease-liquid group cursor-pointer"
+                    >
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/10">
+                        <Icon className="h-4 w-4 text-textSecondary dark:text-gray-300" />
+                      </div>
+                      <div className="min-w-0 flex-1 py-0.5">
+                        <p className="text-sm font-medium leading-tight text-textPrimary truncate dark:text-gray-100">
+                          {item.title}
+                        </p>
+                        <p className="text-xs text-textSecondary leading-tight mt-0.5 dark:text-gray-300">
+                          {dateLabel}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="text-sm font-medium text-textPrimary tabular-nums whitespace-nowrap dark:text-gray-100">
+                          {item.cost != null
+                            ? formatCurrency(
+                                item.cost,
+                                displayCurrency,
+                                exchangeRates,
+                                decimalPlaces
+                              )
+                            : "—"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveUpcomingToRecent(item.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-surface hover:bg-white/20 dark:hover:bg-white/10 text-accentPositive hover:text-accentPositive dark:text-accentPositive dark:hover:text-accentPositive border border-transparent"
+                          aria-label="Marchează ca efectuată (mută la Recent Activities)"
+                          title="Marchează ca efectuată"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditPayment(item);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-surface hover:bg-white/20 dark:hover:bg-white/10 text-textSecondary hover:text-textPrimary transition-all duration-normal shrink-0 dark:hover:text-gray-200 border border-transparent"
+                          aria-label="Editează"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })
+            ) : (
+              <li className="text-xs text-textSecondary py-2 dark:text-gray-300">
+                Nicio plată viitoare. Apasă + pentru a adăuga.
+              </li>
+            )}
+          </ul>
+        ) : null}
+      </section>
+
+      <div className="h-px bg-white/10 dark:bg-white/10" />
+
+      {/* Recent activities — completed upcoming payments */}
+      <section>
+        <button
+          type="button"
+          onClick={() => setRecentOpen((prev) => !prev)}
+          className="flex items-center gap-2 text-sm font-medium text-textPrimary dark:text-white"
+          aria-expanded={recentOpen}
+          aria-controls="recent-activities-list"
+        >
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${
+              recentOpen ? "rotate-0" : "-rotate-90"
+            }`}
+          />
+          <span>Recent Activities ({recentActivitiesFromStore.length})</span>
+        </button>
+        {recentOpen ? (
+          <ul id="recent-activities-list" className="space-y-2 mt-3">
+            {recentActivitiesFromStore.length ? (
+              recentActivitiesFromStore.slice(0, 10).map((activity) => {
+                const Icon = getUpcomingPaymentIcon(activity.icon);
                 const dateLabel = (() => {
                   try {
-                    return format(parseISO(item.date), "d MMM yyyy", {
+                    return format(parseISO(activity.date), "d MMM yyyy", {
                       locale: ro,
                     });
                   } catch {
-                    return item.date;
+                    return activity.date;
                   }
                 })();
                 return (
                   <li
-                    key={item.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => openViewPayment(item)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        openViewPayment(item);
-                      }
-                    }}
-                    className="flex items-start gap-3 rounded-xl p-3 -mx-1 hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-normal ease-liquid group cursor-pointer"
+                    key={activity.id}
+                    className="flex items-center gap-3 rounded-xl p-3 -mx-1 hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-normal ease-liquid group"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl glass-surface border border-white/10">
-                      <Icon className="h-5 w-5 text-textSecondary dark:text-gray-300" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/10">
+                      <Icon className="h-4 w-4 text-textSecondary dark:text-gray-300" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm leading-snug text-textPrimary break-words dark:text-gray-100">
-                        {item.title}
+                    <div className="min-w-0 flex-1 py-0.5">
+                      <p className="text-sm font-medium leading-tight text-textPrimary truncate dark:text-gray-100">
+                        {activity.title}
                       </p>
-                      <p className="text-xs text-textSecondary mt-1 dark:text-gray-300">
+                      <p className="text-xs text-textSecondary leading-tight mt-0.5 dark:text-gray-300">
                         {dateLabel}
                       </p>
                     </div>
-                    <span className="text-sm font-medium text-textPrimary shrink-0 tabular-nums whitespace-nowrap dark:text-gray-100">
-                      {item.cost != null ? formatCurrency(item.cost, displayCurrency, exchangeRates, decimalPlaces) : "—"}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditPayment(item);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-surface hover:bg-white/20 dark:hover:bg-white/10 text-textSecondary hover:text-textPrimary transition-all duration-normal shrink-0 dark:hover:text-gray-200 border border-transparent"
-                      aria-label="Editează"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="text-sm font-medium text-textPrimary tabular-nums whitespace-nowrap dark:text-gray-100">
+                        {activity.cost != null
+                          ? formatCurrency(
+                              activity.cost,
+                              displayCurrency,
+                              exchangeRates,
+                              decimalPlaces
+                            )
+                          : "—"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          moveRecentBackToUpcoming(activity.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-surface hover:bg-white/20 dark:hover:bg-white/10 text-textSecondary hover:text-textPrimary transition-all duration-normal shrink-0 dark:hover:text-gray-200 border border-transparent"
+                        aria-label="Mută înapoi la Upcoming Payments"
+                        title="Mută înapoi la Upcoming Payments"
+                      >
+                        <Undo2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </li>
                 );
               })
-          ) : (
-            <li className="text-xs text-textSecondary py-2 dark:text-gray-300">
-              Nicio plată viitoare. Apasă + pentru a adăuga.
-            </li>
-          )}
-        </ul>
-      </section>
-
-      {/* Recent activities */}
-      <section>
-        <h3 className="text-sm font-medium text-textPrimary mb-0.5 dark:text-white">
-          Recent Activities
-        </h3>
-        <p className="text-xs text-textSecondary mb-3 dark:text-gray-300">
-          {activitiesDate}
-        </p>
-        <ul className="space-y-1">
-          {recentActivities.length ? (
-            recentActivities.map((a) => (
-              <li
-                key={a.label}
-                className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-normal ease-liquid"
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl glass-surface border border-white/10" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-textPrimary truncate dark:text-gray-100">
-                    {a.label}
-                  </p>
-                </div>
-                <span className="text-sm font-medium text-textPrimary shrink-0 tabular-nums dark:text-gray-100">
-                  {formatCurrency(a.amount, displayCurrency, exchangeRates, decimalPlaces)}
-                </span>
+            ) : (
+              <li className="text-xs text-textSecondary py-2 dark:text-gray-300">
+                Marchează plăți ca efectuate din Upcoming Payments sau din
+                notificări.
               </li>
-            ))
-          ) : (
-            <li className="text-xs text-textSecondary py-2 dark:text-gray-300">
-              No spending data. Add data in Monthly Input.
-            </li>
-          )}
-        </ul>
+            )}
+          </ul>
+        ) : null}
       </section>
 
       <UpcomingPaymentModal
@@ -237,6 +274,7 @@ export function RightSidebar() {
         onOpenChange={handleViewModalOpenChange}
         item={viewingPayment}
         onEdit={handleEditFromView}
+        onMarkAsDone={moveUpcomingToRecent}
       />
     </aside>
   );

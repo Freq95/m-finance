@@ -448,8 +448,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               <p className="mt-2 text-xs text-textSecondary dark:text-gray-300 mb-3">
                 Notifications will remind you {settings.notificationsDaysBefore} day(s) before each payment.
               </p>
-              <div className="flex gap-2">
-                {[1, 2, 3].map((days) => (
+              <div className="flex flex-wrap gap-2">
+                {([1, 3, 7, 14, 31] as const).map((days) => (
                   <button
                     key={days}
                     type="button"

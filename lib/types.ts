@@ -97,3 +97,8 @@ export type UpcomingPayment = {
   date: string; // YYYY-MM-DD
   cost: number | null; // null if unknown
 };
+
+/** Completed upcoming payment, moved to Recent Activities */
+export type RecentActivity = UpcomingPayment & {
+  completedAt: string; // ISO date when marked as done
+};

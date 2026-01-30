@@ -13,7 +13,7 @@ import { useState } from "react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
-  { name: "Monthly input", href: "/monthly-input", icon: FilePenLine, badge: 2 },
+  { name: "Monthly input", href: "/monthly-input", icon: FilePenLine },
 ];
 
 export function Sidebar() {
@@ -69,17 +69,7 @@ export function Sidebar() {
                       aria-hidden="true"
                     />
                   )}
-                  <span className="relative">
-                    <item.icon className="h-5 w-5" strokeWidth={2} />
-                    {item.badge != null && (
-                      <span
-                        className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white shadow-soft"
-                        aria-hidden="true"
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </span>
+                  <item.icon className="h-5 w-5" strokeWidth={2} />
                 </Link>
               );
             })}

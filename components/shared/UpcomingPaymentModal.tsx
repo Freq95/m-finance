@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UpcomingPaymentModalProps {
@@ -127,10 +128,11 @@ export function UpcomingPaymentModal({
                       setForm((p) => ({ ...p, icon: id }))
                     }
                     className={cn(
-                      "flex items-center justify-center h-11 w-11 rounded-full border transition-colors shrink-0",
+                      "flex items-center justify-center h-11 w-11 rounded-full border shrink-0",
+                      "transition-all duration-200 ease-out",
                       isSelected
-                        ? "bg-accentPrimary text-white border-accentPrimary dark:bg-accentPrimary dark:text-white dark:border-accentPrimary"
-                        : "bg-black/[0.06] dark:bg-white/10 border-transparent hover:bg-black/[0.1] dark:hover:bg-white/20 text-textSecondary dark:text-gray-300"
+                        ? "bg-accentOrange text-white border-accentOrange scale-110 shadow-md shadow-accentOrange/25"
+                        : "bg-black/[0.06] dark:bg-white/10 border-transparent hover:bg-black/[0.1] dark:hover:bg-white/20 hover:scale-105 text-textSecondary dark:text-gray-300"
                     )}
                     aria-label={label}
                     title={label}
@@ -188,22 +190,22 @@ export function UpcomingPaymentModal({
                 <Button
                   type="button"
                   variant="secondary"
+                  size="lg"
                   onClick={() => setDeleteConfirmOpen(true)}
-                  className="text-accentNegative hover:bg-accentNegative/10"
+                  className="text-accentNegative hover:bg-accentNegative/10 w-11 p-0 shrink-0 rounded-xl"
+                  aria-label="Șterge"
                 >
-                  Șterge
+                  <Trash2 className="h-5 w-5" />
                 </Button>
               )}
             </div>
             <div className="flex gap-2">
               <Button
-                type="button"
-                variant="secondary"
-                onClick={() => onOpenChange(false)}
+                type="submit"
+                size="lg"
+                disabled={!form.title.trim()}
+                className="min-w-[140px]"
               >
-                Anulare
-              </Button>
-              <Button type="submit" disabled={!form.title.trim()}>
                 {editItem ? "Salvează" : "Adaugă"}
               </Button>
             </div>

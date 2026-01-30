@@ -13,6 +13,7 @@ import type {
   CategoryAmounts,
   MonthString,
   UpcomingPayment,
+  RecentActivity,
 } from "../types";
 import {
   loadRecords as loadRecordsFromStorage,
@@ -52,6 +53,7 @@ interface FinanceStore {
   };
   exchangeRatesUpdatedAt: string | null;
   upcomingPayments: UpcomingPayment[];
+  recentActivities: RecentActivity[];
 
   // Actions
   setDisplayCurrency: (currency: DisplayCurrency) => void;
@@ -83,6 +85,8 @@ interface FinanceStore {
   addUpcomingPayment: (item: Omit<UpcomingPayment, "id">) => void;
   updateUpcomingPayment: (id: string, item: Partial<Omit<UpcomingPayment, "id">>) => void;
   removeUpcomingPayment: (id: string) => void;
+  moveUpcomingToRecent: (id: string) => void;
+  moveRecentBackToUpcoming: (id: string) => void;
 
   // Selectors (computed)
   getCurrentMonthRecord: () => MonthRecord | null;
@@ -115,6 +119,7 @@ export const useFinanceStore = create<FinanceStore>()(
         notificationsDaysBefore: 1,
       },
       upcomingPayments: [],
+      recentActivities: [],
 
       setDisplayCurrency: (currency) => set({ displayCurrency: currency }),
       setExchangeRates: (rates) =>
@@ -146,6 +151,7 @@ export const useFinanceStore = create<FinanceStore>()(
               notificationsDaysBefore: 1,
             },
             upcomingPayments: [],
+            recentActivities: [],
           });
         } catch (error) {
           logError(error, "resetAllData");
@@ -367,6 +373,33 @@ export const useFinanceStore = create<FinanceStore>()(
         }));
       },
 
+      moveUpcomingToRecent: (id) => {
+        set((state) => {
+          const payment = state.upcomingPayments.find((p) => p.id === id);
+          if (!payment) return state;
+          const activity: RecentActivity = {
+            ...payment,
+            completedAt: new Date().toISOString(),
+          };
+          return {
+            upcomingPayments: state.upcomingPayments.filter((p) => p.id !== id),
+            recentActivities: [activity, ...state.recentActivities].slice(0, 50),
+          };
+        });
+      },
+
+      moveRecentBackToUpcoming: (id) => {
+        set((state) => {
+          const activity = state.recentActivities.find((a) => a.id === id);
+          if (!activity) return state;
+          const { completedAt: _, ...payment } = activity;
+          return {
+            recentActivities: state.recentActivities.filter((a) => a.id !== id),
+            upcomingPayments: [...state.upcomingPayments, payment],
+          };
+        });
+      },
+
       // Duplicate month data
       duplicateMonth: (fromMonth, toMonth) => {
         const state = get();
@@ -493,6 +526,7 @@ export const useFinanceStore = create<FinanceStore>()(
         exchangeRatesUpdatedAt: state.exchangeRatesUpdatedAt,
         settings: state.settings,
         upcomingPayments: state.upcomingPayments,
+        recentActivities: state.recentActivities,
       }),
       merge: (persisted, current) => {
         const p = persisted as Record<string, unknown>;

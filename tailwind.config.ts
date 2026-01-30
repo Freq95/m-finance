@@ -97,6 +97,7 @@ const config: Config = {
         "glass-out": "glass-out var(--duration-fast) var(--ease-liquid) forwards",
         "overlay-in": "overlay-in var(--duration-normal) var(--ease-liquid) forwards",
         "overlay-out": "overlay-out var(--duration-fast) var(--ease-liquid) forwards",
+        "due-payment-row-out": "due-payment-row-out var(--duration-normal) var(--ease-liquid) forwards",
       },
       keyframes: {
         "glass-in": {
@@ -114,6 +115,10 @@ const config: Config = {
         "overlay-out": {
           from: { opacity: "1" },
           to: { opacity: "0" },
+        },
+        "due-payment-row-out": {
+          from: { opacity: "1", filter: "blur(0)" },
+          to: { opacity: "0", filter: "blur(6px)" },
         },
       },
     },

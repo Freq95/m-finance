@@ -257,3 +257,44 @@
     opacity: 0;
   }
 }
+
+/* Bell ring — continuous subtle swing when there are due notifications */
+@keyframes bell-ring {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  12% {
+    transform: rotate(14deg);
+  }
+  28% {
+    transform: rotate(-10deg);
+  }
+  44% {
+    transform: rotate(8deg);
+  }
+  60% {
+    transform: rotate(-4deg);
+  }
+  76% {
+    transform: rotate(2deg);
+  }
+}
+
+.animate-bell-ring {
+  animation: bell-ring 1.6s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* TV-style close for due payments list items */
+@keyframes tv-item-off {
+  to {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+.due-payments-modal-closing li {
+  transform-origin: center;
+  animation: tv-item-off 0.28s ease-in forwards;
+}
