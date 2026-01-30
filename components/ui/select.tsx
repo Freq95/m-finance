@@ -11,7 +11,7 @@ const Select = React.forwardRef<
       <select
         className={cn(
           "flex h-10 w-full appearance-none rounded-xl border border-white/20 dark:border-white/10",
-          "bg-white/50 dark:bg-white/5 backdrop-blur-sm",
+          "glass-surface",
           "px-3 py-2 pr-8 text-sm transition-all duration-200",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accentPrimary/30 focus-visible:border-accentPrimary/40 focus-visible:bg-white/80 dark:focus-visible:bg-white/10",
           "disabled:cursor-not-allowed disabled:opacity-50",

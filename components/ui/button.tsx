@@ -10,11 +10,11 @@ const buttonVariants = cva(
         default:
           "bg-accentPrimary text-white hover:bg-accentPrimaryHover shadow-soft hover:shadow-glass",
         secondary:
-          "glass-panel text-textPrimary dark:text-white border border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-white/10",
+          "glass-surface text-textPrimary dark:text-white border border-white/20 dark:border-white/10 hover:bg-white/60 dark:hover:bg-white/10",
         danger:
           "bg-accentNegative text-white hover:bg-red-600 shadow-soft",
         ghost:
-          "hover:bg-black/[0.04] dark:hover:bg-white/10",
+          "hover:bg-white/60 dark:hover:bg-white/10",
       },
       size: {
         default: "h-10 px-6 py-3",

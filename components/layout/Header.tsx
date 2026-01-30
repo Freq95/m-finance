@@ -58,7 +58,7 @@ export function Header({
             <Input
               type="search"
               placeholder="Search"
-              className="pl-9 h-9 bg-white/40 dark:bg-white/5 border-white/20 dark:border-white/10 rounded-xl text-sm"
+              className="pl-9 h-9 glass-surface rounded-xl text-sm border-white/20 dark:border-white/10"
               aria-label="Search"
             />
           </div>
@@ -69,7 +69,7 @@ export function Header({
           pathname !== "/" &&
           !pathname.startsWith("/settings") && (
           <div
-            className="flex rounded-xl bg-black/[0.04] dark:bg-white/10 p-1 border border-black/[0.06] dark:border-white/10"
+            className="flex rounded-xl glass-surface p-1 border border-white/20 dark:border-white/10"
             role="group"
             aria-label="Profile view"
           >
@@ -82,7 +82,7 @@ export function Header({
                   "rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid min-w-[4rem] sm:min-w-0",
                   selectedPerson === opt.value
                     ? "bg-white/90 dark:bg-white/20 text-textPrimary dark:text-white shadow-soft border border-white/30 dark:border-white/20"
-                    : "text-textSecondary hover:text-textPrimary hover:bg-black/[0.04] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+                    : "text-textSecondary hover:text-textPrimary hover:bg-white/60 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
                 )}
               >
                 {opt.label}
@@ -94,7 +94,7 @@ export function Header({
           role="group"
           aria-label="Curs valutar"
           className={cn(
-            "inline-flex items-center gap-1 rounded-xl border border-white/20 dark:border-white/10 bg-black/[0.04] dark:bg-white/10 px-2 py-1.5"
+            "inline-flex items-center gap-1 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-2 py-1.5"
           )}
         >
           <span
@@ -116,14 +116,14 @@ export function Header({
         </div>
         <button
           type="button"
-          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+          className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
           aria-label="Calendar"
         >
           <Calendar className="h-5 w-5" />
         </button>
         <button
           type="button"
-          className="relative rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+          className="relative rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
@@ -135,7 +135,7 @@ export function Header({
         <button
           type="button"
           onClick={toggleTheme}
-          className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+          className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
           aria-label={
             theme === "dark"
               ? "Comută la modul deschis"
@@ -152,7 +152,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+            className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
@@ -160,13 +160,13 @@ export function Header({
         ) : (
           <Link
             href="/settings"
-            className="rounded-xl p-2.5 text-textSecondary hover:bg-black/[0.04] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+            className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
           </Link>
         )}
-        <span className="relative shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-accentPrimary text-white shadow-soft dark:bg-blue-500">
+        <span className="relative shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-accentPrimary text-white shadow-soft dark:bg-blue-500 border border-white/20">
           <User className="h-4 w-4" />
           <span
             className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-accentPositive shadow-sm"

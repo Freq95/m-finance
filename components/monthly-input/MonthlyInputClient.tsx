@@ -8,6 +8,8 @@ import type { CategoryAmounts, MonthString } from "@/lib/types";
 import type { Person } from "@/lib/types";
 import {
   getPreviousMonth,
+  getNextMonth,
+  getCurrentMonth,
   formatMonthShort,
   monthStringToDate,
 } from "@/lib/utils/date";
@@ -21,7 +23,6 @@ import {
 } from "@/lib/calculations/calculations";
 import { formatRON } from "@/lib/utils/currency";
 import { CATEGORY_SECTIONS, PERSON_LABELS } from "@/lib/constants";
-import { MonthPicker } from "./MonthPicker";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,8 @@ import {
 } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
-import { Save, Copy, RotateCcw, TrendingUp, Receipt, Wallet, PiggyBank, Landmark, Minus } from "lucide-react";
+import { Save, Copy, RotateCcw, TrendingUp, Receipt, Wallet, PiggyBank, Landmark, Minus, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function MonthlyInputClient() {
   const loadRecords = useFinanceStore((s) => s.loadRecords);
@@ -154,66 +156,131 @@ export function MonthlyInputClient() {
           retryLabel={error === "Failed to save" ? "Salvează din nou" : "Reîncarcă"}
         />
       )}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-h1 dark:text-white">Monthly Input</h1>
-        <div className="flex flex-wrap items-center gap-3">
-          <MonthPicker value={selectedMonth} onChange={setSelectedMonth} />
-          <Button
-            onClick={() => setDupDialogOpen(true)}
-            disabled={!hasPrevRecord}
-            variant="secondary"
-            aria-label={hasPrevRecord ? "Duplică luna anterioară" : "Nu există lună anterioară de duplicat"}
-          >
-            <Copy className="mr-2 h-4 w-4 dark:text-white" />
-            Duplică luna anterioară
-          </Button>
-          <Button
-            onClick={() => setResetDialogOpen(true)}
-            variant="secondary"
-            aria-label="Resetează luna la zero"
-          >
-            <RotateCcw className="mr-2 h-4 w-4 dark:text-white" />
-            Resetează luna
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            aria-label={isSaving ? "Se salvează…" : "Salvează luna curentă"}
-          >
-            {isSaving ? (
-              <LoadingSpinner size="sm" className="mr-2" />
-            ) : (
-              <Save className="mr-2 h-4 w-4 dark:text-white" />
-            )}
-            Salvează
-          </Button>
-          {record && (
-            <>
-              <Badge variant={record.meta.isSaved ? "saved" : "draft"}>
-                {record.meta.isSaved ? "Salvat" : "Ciornă"}
-              </Badge>
-              <span className="text-small dark:text-white/80">
-                Ultima salvare:{" "}
-                {format(parseISO(record.meta.updatedAt), "HH:mm")}
-              </span>
-            </>
-          )}
-        </div>
+      <div>
+        <h1 className="text-h1 text-textPrimary dark:text-white">Monthly Input</h1>
       </div>
 
+      {/* Period + actions — same panel style as Dashboard */}
+      {(() => {
+        const panelHeight = "h-11";
+        const segmentGroup = cn(
+          "inline-flex items-center rounded-xl glass-surface border border-white/20 dark:border-white/10 p-1 shrink-0",
+          panelHeight
+        );
+        const divider = (
+          <span
+            className={cn("w-px bg-white/20 dark:bg-white/15 shrink-0", panelHeight)}
+            aria-hidden
+          />
+        );
+        const currentMonth = getCurrentMonth();
+        return (
+          <div className="rounded-2xl glass-panel shadow-soft p-4">
+            <div className="flex flex-wrap items-center justify-center gap-3 lg:gap-4">
+              <button
+                type="button"
+                disabled={selectedMonth === currentMonth}
+                onClick={() => setSelectedMonth(currentMonth)}
+                className={cn(
+                  "inline-flex items-center justify-center gap-1.5 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid shrink-0",
+                  panelHeight,
+                  "text-textSecondary hover:bg-white/60 hover:text-textPrimary dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:dark:hover:bg-transparent"
+                )}
+              >
+                <Calendar className="h-4 w-4 shrink-0" />
+                Luna curentă
+              </button>
+              {divider}
+              <div
+                role="group"
+                aria-label="Lună"
+                className={cn(segmentGroup, "gap-2")}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedMonth(getPreviousMonth(selectedMonth))}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/70 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
+                  aria-label="Luna anterioară"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <div className="min-w-[7rem] py-1 text-center">
+                  <span className="text-base font-medium text-textPrimary dark:text-white">
+                    {formatMonthShort(selectedMonth)}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMonth(getNextMonth(selectedMonth))}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/70 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
+                  aria-label="Luna următoare"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+              {divider}
+              <Button
+                onClick={() => setDupDialogOpen(true)}
+                disabled={!hasPrevRecord}
+                variant="secondary"
+                className={panelHeight}
+                aria-label={hasPrevRecord ? "Duplică luna anterioară" : "Nu există lună anterioară de duplicat"}
+              >
+                <Copy className="mr-2 h-4 w-4 text-textSecondary dark:text-white" />
+                Duplică luna anterioară
+              </Button>
+              <Button
+                onClick={() => setResetDialogOpen(true)}
+                variant="secondary"
+                className={panelHeight}
+                aria-label="Resetează luna la zero"
+              >
+                <RotateCcw className="mr-2 h-4 w-4 text-textSecondary dark:text-white" />
+                Resetează luna
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                className={panelHeight}
+                aria-label={isSaving ? "Se salvează…" : "Salvează luna curentă"}
+              >
+                {isSaving ? (
+                  <LoadingSpinner size="sm" className="mr-2" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4 text-textSecondary dark:text-white" />
+                )}
+                Salvează
+              </Button>
+              {record && (
+                <>
+                  {divider}
+                  <Badge variant={record.meta.isSaved ? "saved" : "draft"}>
+                    {record.meta.isSaved ? "Salvat" : "Ciornă"}
+                  </Badge>
+                  <span className="text-small text-textSecondary dark:text-white/80">
+                    Ultima salvare: {format(parseISO(record.meta.updatedAt), "HH:mm")}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       <Card>
-        <CardHeader className="border-b border-white/10 dark:border-white/10 bg-white/[0.02] dark:bg-white/[0.02] rounded-t-2xl px-6 pb-4 pt-6">
-          <div className="grid grid-cols-[minmax(0,1fr)_minmax(140px,1fr)_minmax(140px,1fr)] gap-4 text-label dark:text-white">
+        <CardHeader className="border-b border-white/10 dark:border-white/10 glass-surface rounded-t-2xl px-6 pb-4 pt-6 border-x border-t border-white/10">
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(140px,1fr)_minmax(140px,1fr)] gap-4 text-label text-textPrimary dark:text-white">
             <div aria-hidden />
-            <div className="text-center text-label font-medium tracking-wide dark:text-white">
+            <div className="text-center text-label font-medium tracking-wide text-textPrimary dark:text-white">
               {PERSON_LABELS.me}
             </div>
-            <div className="text-center text-label font-medium tracking-wide dark:text-white">
+            <div className="text-center text-label font-medium tracking-wide text-textPrimary dark:text-white">
               {PERSON_LABELS.wife}
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6 pt-5 dark:text-white">
+        <CardContent className="p-6 pt-5 text-textPrimary dark:text-white">
           {CATEGORY_SECTIONS.map((section, sectionIndex) => (
             <div
               key={section.title}
@@ -223,14 +290,14 @@ export function MonthlyInputClient() {
                   : "pt-6 mt-6 border-t border-white/10 dark:border-white/10"
               }
             >
-              <h3 className="text-h3 mb-4 font-medium tracking-tight dark:text-white">
+              <h3 className="text-h3 mb-4 font-medium tracking-tight text-textPrimary dark:text-white">
                 {section.title}
               </h3>
               <div className="space-y-0">
                 {section.items.map(({ key, label }) => (
                   <div
                     key={key}
-                    className="grid grid-cols-[minmax(0,1fr)_minmax(140px,1fr)_minmax(140px,1fr)] gap-4 items-center py-2.5 px-1 -mx-1 rounded-lg hover:bg-white/[0.02] dark:hover:bg-white/[0.03] transition-colors duration-150"
+                    className="grid grid-cols-[minmax(0,1fr)_minmax(140px,1fr)_minmax(140px,1fr)] gap-4 items-center py-2.5 px-1 -mx-1 rounded-lg hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-150"
                   >
                     <div className="text-sm text-textSecondary dark:text-white/90 min-w-0">
                       {label}
@@ -269,31 +336,31 @@ export function MonthlyInputClient() {
                     label: "Venit",
                     value: calculateIncomeTotal(combinedForFooter),
                     icon: TrendingUp,
-                    valueColor: "text-white",
+                    valueColor: "text-textPrimary dark:text-white",
                   },
                   {
                     label: "Facturi",
                     value: calculateBillsTotal(combinedForFooter),
                     icon: Receipt,
-                    valueColor: "text-white",
+                    valueColor: "text-textPrimary dark:text-white",
                   },
                   {
                     label: "Cheltuieli",
                     value: calculateExpensesTotal(combinedForFooter),
                     icon: Wallet,
-                    valueColor: "text-white",
+                    valueColor: "text-textPrimary dark:text-white",
                   },
                   {
                     label: "Economii",
                     value: combinedForFooter.economii ?? 0,
                     icon: PiggyBank,
-                    valueColor: "text-white",
+                    valueColor: "text-textPrimary dark:text-white",
                   },
                   {
                     label: "Investiții",
                     value: combinedForFooter.investitii ?? 0,
                     icon: Landmark,
-                    valueColor: "text-white",
+                    valueColor: "text-textPrimary dark:text-white",
                   },
                   {
                     label: "Cashflow net",
@@ -309,11 +376,11 @@ export function MonthlyInputClient() {
                     key={label}
                     className="flex items-start gap-3 rounded-xl bg-white/5 border border-white/10 px-5 py-4 backdrop-blur-sm min-w-0"
                   >
-                    <div className="shrink-0 mt-0.5 text-white/90">
+                    <div className="shrink-0 mt-0.5 text-textSecondary dark:text-white/90">
                       <Icon className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} aria-hidden />
                     </div>
                     <div className="min-w-0 overflow-visible">
-                      <p className="text-xs sm:text-sm font-medium text-white/70 break-words">{label}</p>
+                      <p className="text-xs sm:text-sm font-medium text-textSecondary dark:text-white/70 break-words">{label}</p>
                       <p
                         className={`text-base sm:text-lg font-semibold tabular-nums break-all ${valueColor}`}
                         title={formatRON(value)}

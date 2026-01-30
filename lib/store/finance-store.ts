@@ -20,7 +20,6 @@ import { combineCategoryAmounts } from "../calculations/calculations";
 import { logError } from "../utils/errors";
 import type { DisplayCurrency, ExchangeRates } from "../utils/currency";
 
-export type DashboardView = "month" | "annual";
 export type Theme = "light" | "dark";
 
 interface FinanceStore {
@@ -28,7 +27,6 @@ interface FinanceStore {
   records: MonthRecord[];
   selectedPerson: PersonView;
   selectedMonth: MonthString;
-  dashboardView: DashboardView;
   theme: Theme;
   displayCurrency: DisplayCurrency;
   exchangeRates: ExchangeRates | null;
@@ -58,7 +56,6 @@ interface FinanceStore {
   resetMonth: (month: MonthString) => void;
   setSelectedPerson: (person: PersonView) => void;
   setSelectedMonth: (month: MonthString) => void;
-  setDashboardView: (view: DashboardView) => void;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   updateSettings: (settings: Partial<FinanceStore["settings"]>) => void;
@@ -81,7 +78,6 @@ export const useFinanceStore = create<FinanceStore>()(
       records: [],
       selectedPerson: "me",
       selectedMonth: getCurrentMonth(),
-      dashboardView: "month",
       theme: "light",
       displayCurrency: "RON",
       exchangeRates: null,
@@ -305,11 +301,6 @@ export const useFinanceStore = create<FinanceStore>()(
         set({ selectedMonth: month });
       },
 
-      // Set dashboard view (month vs annual)
-      setDashboardView: (view) => {
-        set({ dashboardView: view });
-      },
-
       setTheme: (theme) => {
         set({ theme });
       },
@@ -362,7 +353,6 @@ export const useFinanceStore = create<FinanceStore>()(
       partialize: (state) => ({
         selectedPerson: state.selectedPerson,
         selectedMonth: state.selectedMonth,
-        dashboardView: state.dashboardView,
         theme: state.theme,
         displayCurrency: state.displayCurrency,
         settings: state.settings,

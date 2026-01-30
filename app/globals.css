@@ -82,6 +82,23 @@
     box-shadow: var(--shadow-soft);
   }
 
+  /* Glass surface — compact controls (toggles, badges, icon wrappers, inputs) */
+  .glass-surface {
+    background: rgba(var(--glass-bg), 0.5);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(var(--glass-border), var(--glass-border-opacity));
+  }
+
+  /* Dark glass panel — sidebar / always-dark surfaces */
+  .glass-panel-dark {
+    background: rgba(30, 30, 34, 0.75);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-soft);
+  }
+
   .glass-panel-elevated {
     background: rgba(var(--surface-elevated), var(--surface-elevated-opacity));
     backdrop-filter: blur(var(--glass-blur));

@@ -152,9 +152,9 @@ export function RightSidebar() {
                         openViewPayment(item);
                       }
                     }}
-                    className="flex items-start gap-3 rounded-xl p-3 -mx-1 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors duration-normal ease-liquid group cursor-pointer"
+                    className="flex items-start gap-3 rounded-xl p-3 -mx-1 hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-normal ease-liquid group cursor-pointer"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/[0.05] dark:bg-white/10">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl glass-surface border border-white/10">
                       <Icon className="h-5 w-5 text-textSecondary dark:text-gray-300" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -174,7 +174,7 @@ export function RightSidebar() {
                         e.stopPropagation();
                         openEditPayment(item);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-black/[0.06] dark:hover:bg-white/10 text-textSecondary hover:text-textPrimary transition-all duration-normal shrink-0 dark:hover:text-gray-200"
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg glass-surface hover:bg-white/20 dark:hover:bg-white/10 text-textSecondary hover:text-textPrimary transition-all duration-normal shrink-0 dark:hover:text-gray-200 border border-transparent"
                       aria-label="Editează"
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -203,9 +203,9 @@ export function RightSidebar() {
             recentActivities.map((a) => (
               <li
                 key={a.label}
-                className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors duration-normal ease-liquid"
+                className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 hover:bg-white/[0.06] dark:hover:bg-white/[0.08] transition-colors duration-normal ease-liquid"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.05] dark:bg-white/10" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl glass-surface border border-white/10" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-textPrimary truncate dark:text-gray-100">
                     {a.label}

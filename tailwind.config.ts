@@ -10,6 +10,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /* Theme: outer panels use teal (light) / navy (dark) */
+        // teal: "#215E61",
+        // navy: "#0f172a",
         background: "#FAFAFC",
         "background-deep": "#F2F2F7",
         card: "#FFFFFF",
@@ -32,6 +35,7 @@ const config: Config = {
         draftBg: "#FFF4ED",
         draftText: "#B45309",
         pending: "#6B7280",
+
       },
       fontFamily: {
         sans: ["var(--font-poppins)", "Poppins", "sans-serif"],

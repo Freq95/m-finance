@@ -31,7 +31,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         <div className="mt-4">
           <label
             className={cn(
-              "flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 dark:border-white/10 bg-black/[0.03] dark:bg-white/5 px-4 py-3 transition-all duration-normal ease-liquid hover:bg-black/[0.05] dark:hover:bg-white/10",
+              "flex cursor-pointer items-center justify-between gap-4 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-4 py-3 transition-all duration-normal ease-liquid hover:bg-white/20 dark:hover:bg-white/10",
               settings.includeInvestmentsInNetCashflow && "border-accentPrimary/40 bg-accentPrimary/10 dark:bg-accentPrimary/20"
             )}
             htmlFor="include-investments"

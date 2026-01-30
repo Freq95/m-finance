@@ -43,13 +43,14 @@ export const colors = {
   shadowHover: "rgba(0, 0, 0, 0.1)",
 } as const;
 
-/** Recharts Tooltip: no default white box; use with chart-tooltip class or contentStyle */
+/** Recharts Tooltip: no default white box; use with chart-tooltip class or contentStyle. High z-index so tooltips render above cards. */
 export const chartTooltipWrapperStyle: Record<string, string | number> = {
   outline: "none",
   border: "none",
   background: "transparent",
   boxShadow: "none",
   padding: 0,
+  zIndex: 10000,
 };
 
 /** Bar corner radius for Recharts bars (stacked and single). [topLeft, topRight, bottomRight, bottomLeft]. */

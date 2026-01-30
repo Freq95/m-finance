@@ -3,12 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
-  LineChart,
-  Wallet,
-  FileText,
-  Trophy,
-  FileBarChart,
+  BarChart3,
+  FilePenLine,
   Settings,
   Menu,
   X,
@@ -17,12 +13,8 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 const navigation = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Analytics", href: "/", icon: LineChart },
-  { name: "Wallet", href: "/", icon: Wallet },
-  { name: "Documents", href: "/monthly-input", icon: FileText, badge: 2 },
-  { name: "Rewards", href: "/", icon: Trophy },
-  { name: "Reports", href: "/", icon: FileBarChart },
+  { name: "Dashboard", href: "/", icon: BarChart3 },
+  { name: "Monthly input", href: "/monthly-input", icon: FilePenLine, badge: 2 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -33,7 +25,7 @@ export function Sidebar() {
   return (
     <>
       <button
-        className="fixed left-4 top-4 z-50 lg:hidden rounded-2xl p-2.5 bg-gray-900/80 dark:bg-black/60 backdrop-blur-glass border border-white/10 text-white shadow-glass transition-all duration-normal ease-liquid"
+        className="fixed left-4 top-4 z-50 lg:hidden rounded-2xl p-2.5 glass-panel-dark border border-white/10 text-white shadow-glass transition-all duration-normal ease-liquid"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
         aria-label="Toggle menu"
       >
@@ -50,7 +42,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen w-[72px] bg-gray-900/75 dark:bg-black/70 backdrop-blur-glass border-r border-white/10 shadow-glass transition-transform duration-normal ease-liquid",
+          "fixed left-0 top-0 z-40 h-screen w-[72px] glass-panel-dark border-r border-white/10 shadow-glass transition-transform duration-normal ease-liquid",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -59,7 +51,7 @@ export function Sidebar() {
             {navigation.map((item) => {
               const isActive =
                 item.href === "/"
-                  ? pathname === "/" && item.name === "Home"
+                  ? pathname === "/" && item.name === "Dashboard"
                   : pathname.startsWith(item.href);
               return (
                 <Link
@@ -67,7 +59,7 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
-                    "relative flex h-11 w-12 items-center justify-center text-white/70 transition-all duration-normal ease-liquid rounded-xl mx-1.5 hover:bg-white/15 hover:text-white",
+                    "relative flex h-11 w-12 items-center justify-center text-white/70 transition-all duration-normal ease-liquid rounded-xl mx-1.5 hover:bg-white/10 hover:text-white",
                     isActive && "text-white"
                   )}
                   title={item.name}
@@ -95,7 +87,7 @@ export function Sidebar() {
             })}
           </nav>
           <button
-            className="mt-auto lg:hidden p-2.5 rounded-xl mx-1.5 text-white/60 hover:bg-white/15 hover:text-white transition-all duration-normal ease-liquid"
+            className="mt-auto lg:hidden p-2.5 rounded-xl mx-1.5 text-white/60 hover:bg-white/10 hover:text-white transition-all duration-normal ease-liquid"
             onClick={() => setIsMobileOpen(false)}
             aria-label="Close menu"
           >

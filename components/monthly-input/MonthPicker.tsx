@@ -42,7 +42,7 @@ export function MonthPicker({ value, onChange, className }: MonthPickerProps) {
         className={className}
       >
         {formatMonthShort(value)}
-        <ChevronDown className="ml-2 h-4 w-4 dark:text-white" />
+        <ChevronDown className="ml-2 h-4 w-4 text-textMuted dark:text-white" />
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent onClose={() => setOpen(false)}>

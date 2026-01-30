@@ -103,7 +103,7 @@ const DialogContent = React.forwardRef<
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-4 top-4 rounded-xl p-2 opacity-70 transition-all duration-200 hover:opacity-100 hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-accentPrimary/30 focus:ring-offset-2 disabled:pointer-events-none dark:hover:bg-white/10"
+        className="absolute right-4 top-4 rounded-xl p-2 glass-surface border border-transparent opacity-70 transition-all duration-200 hover:opacity-100 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-accentPrimary/30 focus:ring-offset-2 disabled:pointer-events-none dark:hover:bg-white/10"
         aria-label="Close"
       >
         <X className="h-4 w-4" />

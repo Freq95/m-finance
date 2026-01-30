@@ -18,11 +18,7 @@ import {
 import {
   formatMonthShort,
   getMonthsForYear,
-  getPreviousMonth,
-  getNextMonth,
-  get12MonthsEndingIn,
   monthStringForYear,
-  getCurrentMonth,
 } from "@/lib/utils/date";
 import { format, parseISO } from "date-fns";
 import { ro } from "date-fns/locale";
@@ -41,7 +37,9 @@ import {
   Landmark,
   DollarSign,
   Euro,
+  Info,
 } from "lucide-react";
+import { Tooltip as UITooltip } from "@/components/ui/tooltip";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
 import {
@@ -176,10 +174,7 @@ export default function Home() {
   const setSelectedPerson = useFinanceStore((s) => s.setSelectedPerson);
   const selectedMonth = useFinanceStore((s) => s.selectedMonth);
   const setSelectedMonth = useFinanceStore((s) => s.setSelectedMonth);
-  const dashboardView = useFinanceStore((s) => s.dashboardView);
-  const setDashboardView = useFinanceStore((s) => s.setDashboardView);
   const records = useFinanceStore((s) => s.records);
-  const getLast12Months = useFinanceStore((s) => s.getLast12Months);
   const getLast6Months = useFinanceStore((s) => s.getLast6Months);
   const getCombinedData = useFinanceStore((s) => s.getCombinedData);
   const includeInv = useFinanceStore((s) => s.settings.includeInvestmentsInNetCashflow);
@@ -207,7 +202,6 @@ export default function Home() {
     loadRecords();
   }, [loadRecords]);
 
-  const last12FromData = getLast12Months();
   const last6 = getLast6Months();
 
   const recordByMonth = useMemo(() => {
@@ -217,24 +211,6 @@ export default function Home() {
   }, [records]);
 
   const currentData = useMemo(() => {
-    if (dashboardView === "month") {
-      const recordForMonth =
-        recordByMonth.get(selectedMonth) ?? last12FromData[0];
-      if (!recordForMonth) return null;
-      const data = getDataForPerson(
-        recordForMonth,
-        selectedPerson,
-        getCombinedData
-      );
-      if (!data) return null;
-      return {
-        income: calculateIncomeTotal(data),
-        bills: calculateBillsTotal(data),
-        expenses: calculateExpensesTotal(data),
-        cashflow: calculateNetCashflow(data, includeInv),
-      };
-    }
-    // Annual view: aggregate all months of selected year
     const yearMonths = getMonthsForYear(selectedYear);
     const datas: import("@/lib/types").CategoryAmounts[] = [];
     for (const monthStr of yearMonths) {
@@ -253,21 +229,15 @@ export default function Home() {
       cashflow: calculateNetCashflow(aggregated, includeInv),
     };
   }, [
-    dashboardView,
-    selectedMonth,
     selectedYear,
     recordByMonth,
-    last12FromData,
     selectedPerson,
     getCombinedData,
     includeInv,
   ]);
 
   const chartData = useMemo(() => {
-    const monthList =
-      dashboardView === "annual"
-        ? getMonthsForYear(selectedYear)
-        : get12MonthsEndingIn(selectedMonth);
+    const monthList = getMonthsForYear(selectedYear);
     return monthList.map((monthStr) => {
       const record = recordByMonth.get(monthStr);
       const d = record
@@ -299,27 +269,16 @@ export default function Home() {
           income > 0 ? Math.round((investmentsTotal / income) * 100) : 0,
       };
     });
-  }, [dashboardView, selectedMonth, selectedYear, recordByMonth, selectedPerson, getCombinedData, includeInv]);
+  }, [selectedYear, recordByMonth, selectedPerson, getCombinedData, includeInv]);
 
-  const maxChartValue = Math.max(
-    ...chartData.map((d) => d.total),
-    1
-  );
+  const chartTotals = chartData
+    .map((d) => d.total)
+    .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+  const maxChartValue = Math.max(...chartTotals, 1);
+  const domainMax = Math.min(maxChartValue * 1.15, 10_000_000);
 
-  const recordForSelectedMonth =
-    recordByMonth.get(selectedMonth) ?? last12FromData[0];
-
-  // Data for the current period (single month or full year) for pie & top categories
+  // Data for the current period (selected year) for pie & top categories
   const dataForPeriod = useMemo(() => {
-    if (dashboardView === "month") {
-      return recordForSelectedMonth
-        ? getDataForPerson(
-            recordForSelectedMonth,
-            selectedPerson,
-            getCombinedData
-          )
-        : null;
-    }
     const yearMonths = getMonthsForYear(selectedYear);
     const datas: import("@/lib/types").CategoryAmounts[] = [];
     for (const monthStr of yearMonths) {
@@ -331,9 +290,7 @@ export default function Home() {
     }
     return datas.length > 0 ? sumCategoryAmounts(datas) : null;
   }, [
-    dashboardView,
     selectedYear,
-    recordForSelectedMonth,
     recordByMonth,
     selectedPerson,
     getCombinedData,
@@ -368,27 +325,8 @@ export default function Home() {
     })).filter((d) => d.value > 0);
   }, [dataForPeriod]);
 
-  // Paul vs Codru: single month or aggregated year
+  // Paul vs Codru: aggregated year
   const paulVsCodruData = useMemo(() => {
-    if (dashboardView === "month") {
-      if (!recordForSelectedMonth) return [];
-      const meData = recordForSelectedMonth.people.me;
-      const wifeData = recordForSelectedMonth.people.wife;
-      const meIncome = calculateIncomeTotal(meData);
-      const wifeIncome = calculateIncomeTotal(wifeData);
-      const meExpenses = calculateExpensesTotal(meData);
-      const wifeExpenses = calculateExpensesTotal(wifeData);
-      const meInv = calculateInvestmentsTotal(meData);
-      const wifeInv = calculateInvestmentsTotal(wifeData);
-      const meCf = calculateNetCashflow(meData, includeInv);
-      const wifeCf = calculateNetCashflow(wifeData, includeInv);
-      return [
-        { metric: "Venit", Paul: meIncome, Codru: wifeIncome },
-        { metric: "Cheltuieli", Paul: meExpenses, Codru: wifeExpenses },
-        { metric: "Investiții", Paul: meInv, Codru: wifeInv },
-        { metric: "Cashflow net", Paul: meCf, Codru: wifeCf },
-      ];
-    }
     const yearMonths = getMonthsForYear(selectedYear);
     const meDatas: import("@/lib/types").CategoryAmounts[] = [];
     const wifeDatas: import("@/lib/types").CategoryAmounts[] = [];
@@ -408,12 +346,9 @@ export default function Home() {
       { metric: "Investiții", Paul: calculateInvestmentsTotal(meAgg), Codru: calculateInvestmentsTotal(wifeAgg) },
       { metric: "Cashflow net", Paul: calculateNetCashflow(meAgg, includeInv), Codru: calculateNetCashflow(wifeAgg, includeInv) },
     ];
-  }, [dashboardView, selectedYear, recordForSelectedMonth, recordByMonth, includeInv]);
+  }, [selectedYear, recordByMonth, includeInv]);
 
-  const periodLabel =
-    dashboardView === "month"
-      ? formatMonthShort(selectedMonth)
-      : `An ${selectedYear}`;
+  const periodLabel = `An ${selectedYear}`;
 
   if (isLoading) {
     return (
@@ -484,9 +419,9 @@ export default function Home() {
         const segmentSelected =
           "bg-white/90 dark:bg-white/20 text-textPrimary dark:text-white shadow-soft border border-white/20 dark:border-white/20";
         const segmentUnselected =
-          "text-textSecondary hover:text-textPrimary dark:text-gray-300 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/10";
+          "text-textSecondary hover:text-textPrimary dark:text-gray-300 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10";
         const segmentGroup = cn(
-          "inline-flex items-center rounded-xl border border-white/20 dark:border-white/10 bg-black/[0.04] dark:bg-white/10 p-1 shrink-0",
+          "inline-flex items-center rounded-xl glass-surface border border-white/20 dark:border-white/10 p-1 shrink-0",
           panelHeight
         );
         const divider = (
@@ -503,36 +438,6 @@ export default function Home() {
         return (
           <div className="rounded-2xl glass-panel shadow-soft p-4">
             <div className="flex flex-wrap items-center justify-center gap-3 lg:gap-4">
-              {/* Lună | An */}
-              <div
-                role="group"
-                aria-label="Vizualizare lună sau an"
-                className={segmentGroup}
-              >
-                <button
-                  type="button"
-                  onClick={() => setDashboardView("month")}
-                  className={cn(
-                    segmentBase,
-                    dashboardView === "month" ? segmentSelected : segmentUnselected
-                  )}
-                >
-                  Lună
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDashboardView("annual")}
-                  className={cn(
-                    segmentBase,
-                    dashboardView === "annual" ? segmentSelected : segmentUnselected
-                  )}
-                >
-                  An
-                </button>
-              </div>
-
-              {divider}
-
               {/* Paul | Codru | 2-person icon */}
               <div
                 role="group"
@@ -595,68 +500,51 @@ export default function Home() {
               {divider}
               <button
                 type="button"
-                disabled={
-                  (dashboardView === "month" && selectedMonth === getCurrentMonth()) ||
-                  (dashboardView === "annual" && selectedYear === new Date().getFullYear())
-                }
+                disabled={selectedYear === new Date().getFullYear()}
                 onClick={() =>
-                  setSelectedMonth(
-                    dashboardView === "month"
-                      ? getCurrentMonth()
-                      : monthStringForYear(new Date().getFullYear())
-                  )
+                  setSelectedMonth(monthStringForYear(new Date().getFullYear()))
                 }
                 className={cn(
-                  "inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 dark:border-white/10 px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid shrink-0",
+                  "inline-flex items-center justify-center gap-1.5 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-3 py-1.5 text-sm font-medium transition-all duration-normal ease-liquid shrink-0",
                   panelHeight,
-                  "bg-black/[0.04] dark:bg-white/10 text-textSecondary hover:bg-black/[0.06] hover:text-textPrimary dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white",
-                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black/[0.04] disabled:dark:hover:bg-white/10"
+                  "text-textSecondary hover:bg-white/60 hover:text-textPrimary dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:dark:hover:bg-transparent"
                 )}
               >
                 <Calendar className="h-4 w-4 shrink-0" />
-                {dashboardView === "month" ? "Luna curentă" : "Anul curent"}
+                Anul curent
               </button>
 
               {divider}
 
-              {/* Nav + period display — inside panel */}
+              {/* Nav + year display */}
               <div
                 role="group"
-                aria-label={dashboardView === "month" ? "Lună" : "An"}
+                aria-label="An"
                 className={cn(segmentGroup, "gap-2")}
               >
                 <button
                   type="button"
                   onClick={() =>
-                    setSelectedMonth(
-                      dashboardView === "month"
-                        ? getPreviousMonth(selectedMonth)
-                        : monthStringForYear(selectedYear - 1)
-                    )
+                    setSelectedMonth(monthStringForYear(selectedYear - 1))
                   }
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/20 dark:border-white/10 bg-white/60 dark:bg-white/10 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
-                  aria-label={dashboardView === "month" ? "Luna anterioară" : "Anul anterior"}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/70 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
+                  aria-label="Anul anterior"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <div className="min-w-[7rem] py-1 text-center">
                   <span className="text-base font-medium text-textPrimary dark:text-white">
-                    {dashboardView === "month"
-                      ? formatMonthShort(selectedMonth)
-                      : selectedYear}
+                    {selectedYear}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() =>
-                    setSelectedMonth(
-                      dashboardView === "month"
-                        ? getNextMonth(selectedMonth)
-                        : monthStringForYear(selectedYear + 1)
-                    )
+                    setSelectedMonth(monthStringForYear(selectedYear + 1))
                   }
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/20 dark:border-white/10 bg-white/60 dark:bg-white/10 text-textSecondary hover:bg-black/[0.05] hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
-                  aria-label={dashboardView === "month" ? "Luna următoare" : "Anul următor"}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg glass-surface border border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/70 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/15 dark:hover:text-white"
+                  aria-label="Anul următor"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -684,7 +572,7 @@ export default function Home() {
             >
               <div className="p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <div className="rounded-xl bg-black/[0.05] dark:bg-white/10 p-2.5">
+                  <div className="rounded-xl glass-surface p-2.5 border border-white/20 dark:border-white/10">
                     <m.icon className={`h-5 w-5 ${colorClass}`} />
                   </div>
                   <button
@@ -695,8 +583,8 @@ export default function Home() {
                     <MoreVertical className="h-4 w-4" />
                   </button>
                 </div>
-                <p className="text-sm text-white/90 mb-1">{m.label}</p>
-                <p className="text-xl text-white">
+                <p className="text-sm text-textSecondary dark:text-white/90 mb-1">{m.label}</p>
+                <p className="text-xl text-textPrimary dark:text-white">
                   {formatCurrency(val, displayCurrency, exchangeRates)}
                 </p>
               </div>
@@ -705,28 +593,27 @@ export default function Home() {
         })}
       </div>
 
-      {/* Balance + Chart */}
-      <div className="rounded-2xl glass-panel shadow-soft overflow-hidden">
+      {/* Balance + Chart — overflow-visible so Recharts tooltips are not clipped */}
+      <div className="rounded-2xl glass-panel shadow-soft overflow-visible">
         <div className="px-6 pt-6 pb-1">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-medium text-white">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-lg font-medium text-textPrimary dark:text-white">
                 Cashflow net
               </h2>
-              <p className="text-xs text-white/90 mt-0.5">
-                {includeInv
-                  ? "Venit − cheltuieli − investiții (după investiții)"
-                  : "Venit − cheltuieli (înainte de investiții)"}
-              </p>
-              <p className="text-2xl lg:text-3xl text-white mt-1">
-                {currentData
-                  ? formatCurrency(currentData.cashflow, displayCurrency, exchangeRates)
-                  : formatCurrency(0, displayCurrency, exchangeRates)}
-              </p>
+              <UITooltip
+                content={
+                  includeInv
+                    ? "Venit − cheltuieli − investiții (după investiții)"
+                    : "Venit − cheltuieli (înainte de investiții)"
+                }
+                side="top"
+              >
+                <span className="inline-flex cursor-help rounded-full text-textMuted hover:text-textSecondary dark:text-white/70 dark:hover:text-white/90" aria-label="Info">
+                  <Info className="h-4 w-4" />
+                </span>
+              </UITooltip>
             </div>
-            <p className="text-xs text-white/90 uppercase tracking-wide">
-              {periodLabel}
-            </p>
           </div>
         </div>
         <div className="px-6 pt-2 pb-6">
@@ -753,9 +640,9 @@ export default function Home() {
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={(v) =>
-                      v >= 1000 ? `${v / 1000}K` : String(v)
+                      v >= 1000 ? `${Math.round(v / 1000)}K` : String(Math.round(v))
                     }
-                    domain={[0, Math.max(maxChartValue * 1.15, 1000)]}
+                    domain={[0, Math.max(domainMax, 1000)]}
                   />
                   <Tooltip
                     cursor={chartBarCursor}
@@ -868,7 +755,7 @@ export default function Home() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex h-64 items-center justify-center text-white/80 text-sm rounded-2xl bg-black/[0.03] dark:bg-white/[0.04]">
+            <div className="flex h-64 items-center justify-center text-textSecondary dark:text-white/80 text-sm rounded-2xl bg-black/[0.03] dark:bg-white/[0.04]">
               Completează date în Monthly Input pentru grafic.
             </div>
           )}
@@ -877,22 +764,22 @@ export default function Home() {
 
       {/* Category bar chart */}
       <section className="rounded-2xl glass-panel shadow-soft overflow-hidden p-6">
-        <h3 className="text-base font-medium text-white mb-1">Pe categorii</h3>
-        <p className="text-xs text-white/90 mb-4">{periodLabel} · Venit, Rate, Facturi, Altele, Cheltuieli, Economii & Investiții</p>
+        <h3 className="text-base font-medium text-textPrimary dark:text-white mb-1">Pe categorii</h3>
+        <p className="text-xs text-textSecondary dark:text-white/90 mb-4">{periodLabel} · Venit, Rate, Facturi, Altele, Cheltuieli, Economii & Investiții</p>
         {categoryBarData.length > 0 ? (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categoryBarData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={{ stroke: "rgba(0,0,0,0.08)" }} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}K` : String(v))} />
+                <YAxis tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}K` : String(Math.round(v)))} />
                 <Tooltip cursor={chartBarCursor} wrapperStyle={chartTooltipWrapperStyle} contentStyle={chartTooltipContentStyle} formatter={(v: number) => formatCurrency(v, displayCurrency, exchangeRates)} />
                 <Bar dataKey="value" fill={colors.sidebar} radius={[4, 4, 0, 0]} name="Sumă" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="h-64 flex items-center justify-center text-white/80 text-sm">Nu există date pentru perioada selectată.</div>
+          <div className="h-64 flex items-center justify-center text-textSecondary dark:text-white/80 text-sm">Nu există date pentru perioada selectată.</div>
         )}
       </section>
 
@@ -900,19 +787,19 @@ export default function Home() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Chart 1: Income vs expenses over time (line) */}
         <section className="rounded-2xl glass-panel shadow-soft overflow-hidden p-6">
-          <h3 className="text-base font-medium text-white mb-1">
-            <span className="text-xs font-normal text-white/70 mr-2">[1]</span>
+          <h3 className="text-base font-medium text-textPrimary dark:text-white mb-1">
+            <span className="text-xs font-normal text-textMuted dark:text-white/70 mr-2">[1]</span>
             Venit vs cheltuieli
           </h3>
-          <p className="text-xs text-white/90 mb-4">
-            {dashboardView === "annual" ? `An ${selectedYear} (ian–dec)` : "Ultimele 12 luni"} · Evoluția veniturilor și a cheltuielilor
+          <p className="text-xs text-textSecondary dark:text-white/90 mb-4">
+            {`An ${selectedYear} (ian–dec)`} · Evoluția veniturilor și a cheltuielilor
           </p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={{ stroke: "rgba(0,0,0,0.08)" }} tickLine={false} padding={{left: 0, right: 10}}/>
-                <YAxis tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}K` : String(v))} />
+                <YAxis tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}K` : String(Math.round(v)))} />
                 <Tooltip wrapperStyle={chartTooltipWrapperStyle} content={({ active, payload }) => (active && payload?.length ? (
                   <div className="chart-tooltip">
                     <p className="chart-tooltip-label">{payload[0]?.payload?.full}</p>
@@ -929,11 +816,11 @@ export default function Home() {
 
         {/* Chart 2: Spending by category (pie) */}
         <section className="rounded-2xl glass-panel shadow-soft overflow-hidden p-6">
-          <h3 className="text-base font-medium text-white mb-1">
-            <span className="text-xs font-normal text-white/70 mr-2">[2]</span>
+          <h3 className="text-base font-medium text-textPrimary dark:text-white mb-1">
+            <span className="text-xs font-normal text-textMuted dark:text-white/70 mr-2">[2]</span>
             Cheltuieli pe categorii
           </h3>
-          <p className="text-xs text-white/90 mb-4">{periodLabel}</p>
+          <p className="text-xs text-textSecondary dark:text-white/90 mb-4">{periodLabel}</p>
           {spendingByCategoryData.length > 0 ? (
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -956,18 +843,18 @@ export default function Home() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-56 flex items-center justify-center text-white/80 text-sm">Nu există cheltuieli pentru luna selectată.</div>
+            <div className="h-56 flex items-center justify-center text-textSecondary dark:text-white/80 text-sm">Nu există cheltuieli pentru anul selectat.</div>
           )}
         </section>
 
         {/* Chart 3: Savings / investment rate over time */}
         <section className="rounded-2xl glass-panel shadow-soft overflow-hidden p-6">
-          <h3 className="text-base font-medium text-white mb-1">
-            <span className="text-xs font-normal text-white/70 mr-2">[3]</span>
+          <h3 className="text-base font-medium text-textPrimary dark:text-white mb-1">
+            <span className="text-xs font-normal text-textMuted dark:text-white/70 mr-2">[3]</span>
             Rata de economii (investiții / venit)
           </h3>
-          <p className="text-xs text-white/90 mb-4">
-            {dashboardView === "annual" ? `An ${selectedYear}` : "Ultimele 12 luni"} · Procent din venit alocat investițiilor
+          <p className="text-xs text-textSecondary dark:text-white/90 mb-4">
+            {`An ${selectedYear}`} · Procent din venit alocat investițiilor
           </p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -989,16 +876,16 @@ export default function Home() {
 
         {/* Chart 4: Paul vs Codru comparison (grouped bar) */}
         <section className="rounded-2xl glass-panel shadow-soft overflow-hidden p-6">
-          <h3 className="text-base font-medium text-white mb-1">
-            <span className="text-xs font-normal text-white/70 mr-2">[4]</span>
+          <h3 className="text-base font-medium text-textPrimary dark:text-white mb-1">
+            <span className="text-xs font-normal text-textMuted dark:text-white/70 mr-2">[4]</span>
             Paul vs Codru
           </h3>
-          <p className="text-xs text-white/90 mb-4">{periodLabel}</p>
+          <p className="text-xs text-textSecondary dark:text-white/90 mb-4">{periodLabel}</p>
           {paulVsCodruData.length > 0 ? (
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={paulVsCodruData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} layout="vertical" barCategoryGap="20%">
-                  <XAxis type="number" tick={{ fontSize: 10, fill: colors.textSecondary }} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}K` : String(v))} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: colors.textSecondary }} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}K` : String(Math.round(v)))} />
                   <YAxis type="category" dataKey="metric" width={80} tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={chartBarCursor} wrapperStyle={chartTooltipWrapperStyle} contentStyle={chartTooltipContentStyle} formatter={(v: number) => formatCurrency(v, displayCurrency, exchangeRates)} />
                   <Legend />
@@ -1008,25 +895,25 @@ export default function Home() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-56 flex items-center justify-center text-white/80 text-sm">Nu există date pentru luna selectată.</div>
+            <div className="h-56 flex items-center justify-center text-textSecondary dark:text-white/80 text-sm">Nu există date pentru anul selectat.</div>
           )}
         </section>
 
         {/* Chart 5: Cashflow net over time (line) */}
         <section className="rounded-2xl glass-panel shadow-soft overflow-hidden p-6">
-          <h3 className="text-base font-medium text-white mb-1">
-            <span className="text-xs font-normal text-white/70 mr-2">[5]</span>
+          <h3 className="text-base font-medium text-textPrimary dark:text-white mb-1">
+            <span className="text-xs font-normal text-textMuted dark:text-white/70 mr-2">[5]</span>
             Cashflow net în timp
           </h3>
-          <p className="text-xs text-white/90 mb-4">
-            {dashboardView === "annual" ? `An ${selectedYear}` : "Ultimele 12 luni"}
+          <p className="text-xs text-textSecondary dark:text-white/90 mb-4">
+            {`An ${selectedYear}`}
           </p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={{ stroke: "rgba(0,0,0,0.08)" }} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}K` : String(v))} />
+                <YAxis tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}K` : String(Math.round(v)))} />
                 <Tooltip wrapperStyle={chartTooltipWrapperStyle} content={({ active, payload }) => (active && payload?.[0] ? (
                   <div className="chart-tooltip">
                     <p className="chart-tooltip-label">{payload[0].payload?.full}</p>
@@ -1044,11 +931,11 @@ export default function Home() {
 
         {/* Chart 6: Top spending categories (horizontal bar) */}
         <section className="rounded-2xl glass-panel shadow-soft overflow-hidden p-6">
-          <h3 className="text-base font-medium text-white mb-1">
-            <span className="text-xs font-normal text-white/70 mr-2">[6]</span>
+          <h3 className="text-base font-medium text-textPrimary dark:text-white mb-1">
+            <span className="text-xs font-normal text-textMuted dark:text-white/70 mr-2">[6]</span>
             Top categorii de cheltuieli
           </h3>
-          <p className="text-xs text-white/90 mb-4">{periodLabel}</p>
+          <p className="text-xs text-textSecondary dark:text-white/90 mb-4">{periodLabel}</p>
           {topSpendingCategoriesData.length > 0 ? (
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -1061,25 +948,25 @@ export default function Home() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-56 flex items-center justify-center text-white/80 text-sm">Nu există cheltuieli pentru luna selectată.</div>
+            <div className="h-56 flex items-center justify-center text-textSecondary dark:text-white/80 text-sm">Nu există cheltuieli pentru anul selectat.</div>
           )}
         </section>
 
         {/* Chart 7: Bills vs rest of expenses (stacked bar) */}
         <section className="rounded-2xl glass-panel shadow-soft overflow-hidden p-6 lg:col-span-2">
-          <h3 className="text-base font-medium text-white mb-1">
-            <span className="text-xs font-normal text-white/70 mr-2">[7]</span>
+          <h3 className="text-base font-medium text-textPrimary dark:text-white mb-1">
+            <span className="text-xs font-normal text-textMuted dark:text-white/70 mr-2">[7]</span>
             Facturi vs restul cheltuielilor
           </h3>
-          <p className="text-xs text-white/90 mb-4">
-            {dashboardView === "annual" ? `An ${selectedYear} (ian–dec)` : "Ultimele 12 luni"} · Facturi fixe vs altele
+          <p className="text-xs text-textSecondary dark:text-white/90 mb-4">
+            {`An ${selectedYear} (ian–dec)`} · Facturi fixe vs altele
           </p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={{ stroke: "rgba(0,0,0,0.08)" }} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}K` : String(v))} />
+                <YAxis tick={{ fontSize: 10, fill: colors.textSecondary }} axisLine={false} tickLine={false} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}K` : String(Math.round(v)))} />
                 <Tooltip cursor={chartBarCursor} wrapperStyle={chartTooltipWrapperStyle} content={({ active, payload }) => (active && payload?.length ? (
                   <div className="chart-tooltip">
                     <p className="chart-tooltip-label">{payload[0]?.payload?.full}</p>
@@ -1121,8 +1008,8 @@ export default function Home() {
 
       {/* History — frosted card */}
       <section>
-        <h2 className="text-lg font-medium text-white">History</h2>
-        <p className="text-sm text-white/90 mt-0.5">
+        <h2 className="text-lg font-medium text-textPrimary dark:text-white">History</h2>
+        <p className="text-sm text-textSecondary dark:text-white/90 mt-0.5">
           Transaction of last 6 months
         </p>
         <div className="mt-4 rounded-2xl glass-panel shadow-soft overflow-hidden">
@@ -1142,13 +1029,13 @@ export default function Home() {
                     )}
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/[0.06] dark:bg-white/10">
-                      <User className="h-5 w-5 text-white/70" />
+                      <User className="h-5 w-5 text-textMuted dark:text-white/70" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-white text-sm">
+                      <p className="text-textPrimary dark:text-white text-sm">
                         {formatMonthShort(r.month)}
                       </p>
-                      <p className="text-xs text-white/80">
+                      <p className="text-xs text-textSecondary dark:text-white/80">
                         {format(parseISO(r.meta.updatedAt), "hh:mm:ss a", {
                           locale: ro,
                         })}
@@ -1164,10 +1051,10 @@ export default function Home() {
                       {formatCurrency(cashflow, displayCurrency, exchangeRates)}
                     </p>
                     <span
-                      className={`text-xs px-2.5 py-1 rounded-xl ${
+                      className={`text-xs px-2.5 py-1 rounded-xl glass-surface border ${
                         r.meta.isSaved
-                          ? "bg-savedBg/80 text-savedText"
-                          : "bg-draftBg/80 text-draftText"
+                          ? "border-saved/40 text-savedText"
+                          : "border-draft/40 text-draftText"
                       }`}
                     >
                       {r.meta.isSaved ? "Completed" : "Draft"}
@@ -1177,7 +1064,7 @@ export default function Home() {
               })}
             </ul>
           ) : (
-            <div className="px-6 py-12 text-center text-white/80 text-sm rounded-2xl bg-black/[0.03] dark:bg-white/[0.04]">
+            <div className="px-6 py-12 text-center text-textSecondary dark:text-white/80 text-sm rounded-2xl bg-black/[0.03] dark:bg-white/[0.04]">
               No records. Add data in Monthly Input.
             </div>
           )}
