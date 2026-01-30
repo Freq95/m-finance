@@ -1,17 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { RightSidebar } from "@/components/layout/RightSidebar";
 import { SettingsModal } from "@/components/shared/SettingsModal";
 import { ThemeInjector } from "@/components/shared/ThemeInjector";
+import { useFinanceStore } from "@/lib/store/finance-store";
+import { fetchExchangeRates } from "@/lib/utils/currency";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const isDashboard = pathname === "/";
+  const setExchangeRates = useFinanceStore((s) => s.setExchangeRates);
+  const displayCurrency = useFinanceStore((s) => s.displayCurrency);
+
+  // Fetch exchange rates on app load and when display currency changes,
+  // so Header shows $/€ values on every page (settings, monthly-input, dashboard).
+  useEffect(() => {
+    fetchExchangeRates().then(setExchangeRates);
+  }, [setExchangeRates]);
+
+  useEffect(() => {
+    if (displayCurrency !== "RON") {
+      fetchExchangeRates().then(setExchangeRates);
+    }
+  }, [displayCurrency, setExchangeRates]);
 
   return (
     <>

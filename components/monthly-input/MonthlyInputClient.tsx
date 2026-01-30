@@ -25,7 +25,6 @@ import { formatRON } from "@/lib/utils/currency";
 import { CATEGORY_SECTIONS, PERSON_LABELS } from "@/lib/constants";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
@@ -38,7 +37,9 @@ import {
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
 import { Save, Copy, RotateCcw, TrendingUp, Receipt, Wallet, PiggyBank, Landmark, Minus, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { ro } from "date-fns/locale";
 
 export function MonthlyInputClient() {
   const loadRecords = useFinanceStore((s) => s.loadRecords);
@@ -239,30 +240,46 @@ export function MonthlyInputClient() {
                 <RotateCcw className="mr-2 h-4 w-4 text-textSecondary dark:text-white" />
                 Resetează luna
               </Button>
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                className={panelHeight}
-                aria-label={isSaving ? "Se salvează…" : "Salvează luna curentă"}
+              <Tooltip
+                variant="glass"
+                side="bottom"
+                content={
+                  record ? (
+                    <div className="space-y-0.5">
+                      <div className="font-medium">
+                        {record.meta.isSaved ? "Salvat" : "Ciornă"}
+                      </div>
+                      <div className="text-white/80 text-xs">
+                        Ultima salvare: {format(parseISO(record.meta.updatedAt), "d MMM yyyy, HH:mm", { locale: ro })}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-white/80 text-sm">Nu există salvare</span>
+                  )
+                }
               >
-                {isSaving ? (
-                  <LoadingSpinner size="sm" className="mr-2" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4 text-textSecondary dark:text-white" />
-                )}
-                Salvează
-              </Button>
-              {record && (
-                <>
-                  {divider}
-                  <Badge variant={record.meta.isSaved ? "saved" : "draft"}>
-                    {record.meta.isSaved ? "Salvat" : "Ciornă"}
-                  </Badge>
-                  <span className="text-small text-textSecondary dark:text-white/80">
-                    Ultima salvare: {format(parseISO(record.meta.updatedAt), "HH:mm")}
-                  </span>
-                </>
-              )}
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isSaving || (record?.meta.isSaved === true)}
+                  role="group"
+                  aria-label={isSaving ? "Se salvează…" : "Salvează luna curentă"}
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-normal ease-liquid",
+                    "ring-2 ring-white/20 dark:ring-white/15",
+                    "hover:ring-white/30 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed",
+                    record && !record.meta.isSaved
+                      ? "bg-accentOrange text-white shadow-[0_0_14px_rgba(254,127,45,0.4)] hover:shadow-[0_0_18px_rgba(254,127,45,0.5)]"
+                      : "bg-accentPrimary text-white shadow-[0_0_14px_rgba(33,94,97,0.4)] hover:shadow-[0_0_18px_rgba(33,94,97,0.5)]"
+                  )}
+                >
+                  {isSaving ? (
+                    <LoadingSpinner size="sm" className="text-white" />
+                  ) : (
+                    <Save className="h-5 w-5 stroke-[1.5]" />
+                  )}
+                </button>
+              </Tooltip>
             </div>
           </div>
         );

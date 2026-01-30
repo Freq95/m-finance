@@ -9,6 +9,8 @@ interface TooltipProps {
   content: React.ReactNode;
   side?: "top" | "bottom" | "left" | "right";
   className?: string;
+  /** "glass" = transparent + backdrop blur + soft border (like glass-panel) */
+  variant?: "default" | "glass";
 }
 
 const OFFSET = 8;
@@ -18,6 +20,7 @@ export function Tooltip({
   content,
   side = "top",
   className,
+  variant = "default",
 }: TooltipProps) {
   const [isVisible, setIsVisible] = React.useState(false);
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
@@ -73,7 +76,10 @@ export function Tooltip({
     <div
       ref={tooltipRef}
       className={cn(
-        "fixed z-[9999] max-w-[min(90vw,320px)] rounded-lg bg-gray-900 px-3 py-2.5 text-sm text-white shadow-xl ring-1 ring-white/10",
+        "fixed z-[9999] max-w-[min(90vw,320px)] px-3 py-2.5 text-sm text-white",
+        variant === "glass"
+          ? "glass-tooltip-blur rounded-xl"
+          : "rounded-lg bg-gray-900 shadow-xl ring-1 ring-white/10",
         className
       )}
       role="tooltip"

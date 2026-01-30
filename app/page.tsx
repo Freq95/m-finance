@@ -10,11 +10,7 @@ import {
   calculateInvestmentsTotal,
   sumCategoryAmounts,
 } from "@/lib/calculations/calculations";
-import {
-  formatCurrency,
-  fetchExchangeRates,
-  type DisplayCurrency,
-} from "@/lib/utils/currency";
+import { formatCurrency, type DisplayCurrency } from "@/lib/utils/currency";
 import {
   formatMonthShort,
   getMonthsForYear,
@@ -181,17 +177,6 @@ export default function Home() {
   const displayCurrency = useFinanceStore((s) => s.displayCurrency);
   const exchangeRates = useFinanceStore((s) => s.exchangeRates);
   const setDisplayCurrency = useFinanceStore((s) => s.setDisplayCurrency);
-  const setExchangeRates = useFinanceStore((s) => s.setExchangeRates);
-
-  useEffect(() => {
-    fetchExchangeRates().then(setExchangeRates);
-  }, [setExchangeRates]);
-
-  useEffect(() => {
-    if (displayCurrency !== "RON") {
-      fetchExchangeRates().then(setExchangeRates);
-    }
-  }, [displayCurrency, setExchangeRates]);
 
   const selectedYear = useMemo(() => {
     const match = selectedMonth.match(/^(\d{4})-/);
@@ -553,8 +538,9 @@ export default function Home() {
           </div>
         );
       })()}
-      {/* Frosted metric cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Frosted metric cards — parent panel wraps the six cards */}
+      <div className="rounded-2xl glass-panel-wrap p-4 shadow-soft">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metricCards.map((m) => {
           const val = currentData ? m.getValue(currentData as never) : 0;
           const colorClass =
@@ -591,6 +577,7 @@ export default function Home() {
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Balance + Chart — overflow-visible so Recharts tooltips are not clipped */}
@@ -807,8 +794,8 @@ export default function Home() {
                     <p className="chart-tooltip-row">Cheltuieli: {formatCurrency(payload[0]?.payload?.expenses ?? 0, displayCurrency, exchangeRates)}</p>
                   </div>
                 ) : null)} />
-                <Line type="monotone" dataKey="income" stroke={colors.sidebar} strokeWidth={2} dot={{ r: 3 }} name="Venit" />
-                <Line type="monotone" dataKey="expenses" stroke={colors.sidebar} strokeWidth={2} dot={{ r: 3 }} name="Cheltuieli" />
+                <Line type="monotone" dataKey="income" stroke={colors.accentPositive} strokeWidth={2} dot={{ r: 3 }} name="Venit" />
+                <Line type="monotone" dataKey="expenses" stroke={colors.accentOrange} strokeWidth={2} dot={{ r: 3 }} name="Cheltuieli" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -838,7 +825,22 @@ export default function Home() {
                       <Cell key={i} fill={colors.chartPalette[i % colors.chartPalette.length]} />
                     ))}
                   </Pie>
-                  <Tooltip wrapperStyle={chartTooltipWrapperStyle} contentStyle={chartTooltipContentStyle} formatter={(v: number) => formatCurrency(v, displayCurrency, exchangeRates)} />
+                  <Tooltip
+                    wrapperStyle={{ ...chartTooltipWrapperStyle, ...chartTooltipContentStyle }}
+                    contentStyle={{ background: "transparent", border: "none", boxShadow: "none", padding: 0 }}
+                    itemStyle={{ background: "transparent" }}
+                    labelStyle={{ background: "transparent" }}
+                    content={({ active, payload }) =>
+                      active && payload?.[0] ? (
+                        <div className="chart-tooltip">
+                          <p className="chart-tooltip-label">{payload[0].name}</p>
+                          <p className="chart-tooltip-row">
+                            {payload[0].name}: {formatCurrency(Number(payload[0].value) || 0, displayCurrency, exchangeRates)}
+                          </p>
+                        </div>
+                      ) : null
+                    }
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>

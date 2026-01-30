@@ -63,16 +63,16 @@ export const chartBarCursorStyle: Record<string, string | number> = {
   strokeWidth: 1,
 };
 
-/** Recharts default tooltip content (formatter-only) — dark glass */
+/** Recharts default tooltip content (formatter-only, Dashboard) — same as Salvat: transparent + 7px blur */
 export const chartTooltipContentStyle: Record<string, string | number> = {
   margin: 0,
   padding: "12px 16px",
   borderRadius: "16px",
-  background: "rgba(30, 30, 34, 0.92)",
-  backdropFilter: "blur(40px)",
-  WebkitBackdropFilter: "blur(40px)",
-  border: "1px solid rgba(255, 255, 255, 0.14)",
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2)",
+  background: "transparent",
+  backdropFilter: "blur(7px)",
+  WebkitBackdropFilter: "blur(7px)",
+  border: "1px solid rgba(var(--glass-border), var(--glass-border-opacity))",
+  boxShadow: "none",
   color: "rgb(255, 255, 255)",
   fontSize: "13px",
   minWidth: "140px",

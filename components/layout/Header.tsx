@@ -94,7 +94,7 @@ export function Header({
           role="group"
           aria-label="Curs valutar"
           className={cn(
-            "inline-flex items-center gap-1 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-2 py-1.5"
+            "inline-flex items-center gap-1 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-2 py-2.5 min-h-[2.5rem]"
           )}
         >
           <span
