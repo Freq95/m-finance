@@ -1,0 +1,111 @@
+```text
+Build a local-only finance dashboard web app with a pixel-perfect UI matching the provided fintech dashboard reference (same layout proportions, card styles, spacing, rounded corners, subtle shadows, light gray background, and right-side card widget area).
+
+Tech:
+- Next.js + React + TypeScript
+- Tailwind CSS
+- shadcn/ui components for Card, Input, Select, Tabs, Button, Dialog, Tooltip
+- Recharts for charts
+- Zustand for state management
+- Persist data locally using IndexedDB via localforage (no backend, no auth)
+
+Visual/design requirements (must match reference):
+- App shell with very light gray background and a centered rounded container with subtle shadow.
+- Left vertical sidebar with icons; active item highlighted with rounded pill.
+- Top header: “Dashboard” title + subtitle, centered search input with magnifier icon, right-side icons (calendar, notification), avatar.
+- Maintain identical desktop layout: main content left ~2/3, right panel ~1/3.
+- Use white cards, soft shadows, consistent padding, clean typography, modern fintech look.
+- Dashboard sections must visually mirror the reference: top metric cards row, balance + bar chart, history list; right panel with a dark credit-card widget + recent activities + upcoming payments blocks.
+
+Core concept:
+- Two people: "Eu" and "Soția"
+- Global selector in header: "Eu" | "Soția" | "Împreună"
+  - "Împreună" = Eu + Soția for every field, updates instantly, READ-ONLY (no editing Combined).
+- Fixed categories (no custom categories for now).
+- Currency: RON (format with Romanian separators).
+- Month display: "Ian 2026" style in UI; store internally as "YYYY-MM".
+
+Pages:
+1) Dashboard (pixel-perfect like reference)
+2) Monthly Input (manual entry table)
+
+Data model:
+- MonthRecord: { month: "YYYY-MM", people: { me: CategoryAmounts, wife: CategoryAmounts }, meta: { updatedAt: ISOString } }
+- CategoryAmounts includes numeric values:
+  Income: venit, bonuri, extra
+  Rates: rate
+  Bills: apple, intretinere, internet, gaz, curent, telefon, netflix, sala
+  Other: educatie, sanatate, beauty, haine
+  Spending: diverse, transport, cadouri, vacante, casa, gadgets, tazz, alimente
+  Investments: economii_investitii (IMPORTANT: separate bucket)
+
+Rules / calculations (per person and Combined):
+- incomeTotal = venit + bonuri + extra
+- billsTotal = sum(apple,intretinere,internet,gaz,curent,telefon,netflix,sala)
+- expensesTotal = rate + billsTotal + sum(educatie,sanatate,beauty,haine,diverse,transport,cadouri,vacante,casa,gadgets,tazz,alimente)
+- investmentsTotal = economii_investitii (NOT included in expensesTotal)
+- profitLoss = incomeTotal - expensesTotal  (label: “Profit/Pierdere (înainte de investiții)”)
+- netCashflow = incomeTotal - expensesTotal - investmentsTotal (label: “Cashflow net (după investiții)”)
+
+Settings (small panel / modal):
+- Toggle: “Include investments in net cashflow” default ON
+  - If OFF: netCashflow = incomeTotal - expensesTotal (same as profitLoss)
+- Always show both metrics labels clearly to avoid confusion.
+
+Dashboard content mapping (match reference layout):
+- Metric cards row (4 small cards with icons + label + amount), map to:
+  1) Venit total
+  2) Total facturi
+  3) Cheltuieli totale (includes rate)
+  4) Cashflow net (după investiții) [respects toggle]
+- Balance section: show “Profit/Pierdere (înainte de investiții)” for selected month/person.
+- Bar chart: last 12 months of expensesTotal for selected person; tooltip and grid like reference.
+- History section: “History / Transactions of last 6 months” style list, but show last 6 months summary rows:
+  - Month label (Ian 2026)
+  - incomeTotal, expensesTotal, investmentsTotal, netCashflow
+  - status “Saved” or “Draft” based on autosave/saved state
+- Right panel:
+  - Dark “credit card” widget (stylized like reference) showing selected person + month + key number (netCashflow or balance).
+  - Recent Activities: top 4 spending categories by amount for selected month/person (exclude income; optionally exclude investments from activities list).
+  - Upcoming Payments: simple fixed placeholders (e.g., Chirie, Asigurare) with “Pending”, purely UI (no logic needed now).
+
+Monthly Input page (fast data entry):
+- Month selector (display “Ian 2026”, store YYYY-MM)
+- Buttons:
+  - “Save”
+  - “Duplicate previous month” (CRITICAL)
+  - “Reset month”
+- Main input table:
+  - Rows grouped by sections: Income, Bills, Rates, Other, Spending, Investments
+  - Two columns: “Eu” and “Soția”
+  - Numeric inputs with RON formatting on blur; allow typing raw numbers.
+  - Investments section has a note: “Investițiile nu intră în cheltuieli totale.”
+- Sticky totals footer:
+  - show totals for Eu, Soția, Împreună:
+    incomeTotal, billsTotal, expensesTotal, investmentsTotal, profitLoss, netCashflow
+
+Autosave & persistence:
+- Autosave drafts while typing (debounced, e.g. 800–1200ms) into IndexedDB.
+- Show “Last saved at HH:MM” in Monthly Input header (derived from meta.updatedAt).
+- Explicit Save marks record as “Saved” (store a flag), but autosave still updates updatedAt.
+
+Duplicate previous month behavior:
+- When clicked, copy the most recent existing MonthRecord values into the currently selected month for both Eu and Soția.
+- If current month has data, confirm overwrite.
+
+Validation & UX:
+- Empty = 0; disallow negative values by default.
+- Clear error states for invalid input.
+- Combined view is computed only; no inputs are editable in Combined mode anywhere.
+
+Deliverables:
+- Next.js project structure with components:
+  - Layout (Sidebar + Header)
+  - Dashboard page
+  - MonthlyInput page
+  - PersonSelector, MonthSelector, MetricCard, HistoryList, ActivitiesList, UpcomingPayments, SettingsModal
+- Zustand store with selectors for me/wife/combined and computed metrics.
+- Pure calculation utilities with unit-testable functions.
+- Recharts bar chart wired to derived monthly series.
+- Strict TypeScript types throughout.
+```

@@ -6,13 +6,20 @@ import { Header } from "@/components/layout/Header";
 import { RightSidebar } from "@/components/layout/RightSidebar";
 import { SettingsModal } from "@/components/shared/SettingsModal";
 import { CalendarModal } from "@/components/shared/CalendarModal";
+import { SavingsPlanModal } from "@/components/shared/SavingsPlanModal";
 import { ThemeInjector } from "@/components/shared/ThemeInjector";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import { fetchExchangeRates } from "@/lib/utils/currency";
+import { isStorageAvailable } from "@/lib/storage/storage";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [savingsPlanOpen, setSavingsPlanOpen] = useState(false);
+  const [storageAvailable, setStorageAvailable] = useState(true);
+  const [exchangeRatesError, setExchangeRatesError] = useState<string | null>(null);
+  const loadRecords = useFinanceStore((s) => s.loadRecords);
   const setExchangeRates = useFinanceStore((s) => s.setExchangeRates);
   const displayCurrency = useFinanceStore((s) => s.displayCurrency);
   const defaultPersonView = useFinanceStore((s) => s.settings.defaultPersonView);
@@ -29,14 +36,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // Fetch exchange rates on app load and when display currency changes,
   // so Header shows $/€ values on every page (monthly-input, dashboard).
   useEffect(() => {
-    fetchExchangeRates().then(setExchangeRates);
+    fetchExchangeRates()
+      .then((rates) => {
+        setExchangeRates(rates);
+        setExchangeRatesError(null);
+      })
+      .catch(() => {
+        setExchangeRatesError("Failed to fetch exchange rates. Showing RON only.");
+      });
   }, [setExchangeRates]);
 
   useEffect(() => {
     if (displayCurrency !== "RON") {
-      fetchExchangeRates().then(setExchangeRates);
+      fetchExchangeRates()
+        .then((rates) => {
+          setExchangeRates(rates);
+          setExchangeRatesError(null);
+        })
+        .catch(() => {
+          setExchangeRatesError("Failed to fetch exchange rates. Showing RON only.");
+        });
     }
   }, [displayCurrency, setExchangeRates]);
+
+  useEffect(() => {
+    setStorageAvailable(isStorageAvailable());
+  }, []);
+
+  useEffect(() => {
+    loadRecords();
+  }, [loadRecords]);
 
   return (
     <>
@@ -48,9 +77,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Header
             onOpenSettings={() => setSettingsOpen(true)}
             onOpenCalendar={() => setCalendarOpen(true)}
+            onOpenSavingsPlan={() => setSavingsPlanOpen(true)}
           />
           <div className="flex flex-1">
             <main className="flex-1 min-w-0 overflow-auto p-6 lg:p-8">
+              {!storageAvailable && (
+                <div className="mb-4">
+                  <ErrorBanner message="Storage is unavailable in this browser. Your data may not be saved." />
+                </div>
+              )}
+              {exchangeRatesError && (
+                <div className="mb-4">
+                  <ErrorBanner message={exchangeRatesError} />
+                </div>
+              )}
               {children}
             </main>
             <RightSidebar />
@@ -59,6 +99,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       <CalendarModal open={calendarOpen} onOpenChange={setCalendarOpen} />
+      <SavingsPlanModal open={savingsPlanOpen} onOpenChange={setSavingsPlanOpen} />
     </>
   );
 }

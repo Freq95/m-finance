@@ -48,24 +48,6 @@ export function useDashboardData(): DashboardData {
   const dateLocale = useFinanceStore((s) => s.settings.dateLocale);
   const getLast6Months = useFinanceStore((s) => s.getLast6Months);
 
-  // #region agent log
-  if (typeof fetch !== "undefined") {
-    const recLen = records?.length ?? -1;
-    fetch("http://127.0.0.1:7242/ingest/7fcaf6fd-2a4f-4cef-b98e-7aeb9ab2770b", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        location: "useDashboardData.ts:useDashboardData",
-        message: "useDashboardData run",
-        data: { recordsLength: recLen, selectedMonth },
-        timestamp: Date.now(),
-        sessionId: "debug-session",
-        hypothesisId: "H3,H4",
-      }),
-    }).catch(() => {});
-  }
-  // #endregion
-
   const selectedYear = useMemo(() => {
     const match = selectedMonth.match(/^(\d{4})-/);
     return match ? parseInt(match[1], 10) : new Date().getFullYear();
@@ -158,28 +140,6 @@ export function useDashboardData(): DashboardData {
   const periodLabel = `An ${selectedYear}`;
   const domainMax = useMemo(() => getChartDomainMax(chartData), [chartData]);
 
-  // #region agent log
-  if (typeof fetch !== "undefined") {
-    fetch("http://127.0.0.1:7242/ingest/7fcaf6fd-2a4f-4cef-b98e-7aeb9ab2770b", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        location: "useDashboardData.ts:useDashboardData:return",
-        message: "useDashboardData derived values",
-        data: {
-          recordsLength: records?.length ?? -1,
-          selectedYear,
-          chartDataLength: chartData?.length ?? -1,
-          hasCurrentData: !!currentData,
-        },
-        timestamp: Date.now(),
-        sessionId: "debug-session",
-        hypothesisId: "H3,H4",
-      }),
-    }).catch(() => {});
-  }
-  // #endregion
-
   return {
     recordByMonth,
     chartData,
@@ -199,20 +159,6 @@ export function useDashboardData(): DashboardData {
 export function useDashboardLoad(): void {
   const loadRecords = useFinanceStore((s) => s.loadRecords);
   useEffect(() => {
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/7fcaf6fd-2a4f-4cef-b98e-7aeb9ab2770b", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        location: "useDashboardData.ts:useDashboardLoad:effect",
-        message: "Dashboard loadRecords effect ran",
-        data: {},
-        timestamp: Date.now(),
-        sessionId: "debug-session",
-        hypothesisId: "H3",
-      }),
-    }).catch(() => {});
-    // #endregion
     loadRecords();
   }, [loadRecords]);
 }

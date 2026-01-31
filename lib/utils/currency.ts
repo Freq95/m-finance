@@ -62,22 +62,29 @@ export function formatCurrency(
  * API: https://api.frankfurter.app/latest?from=RON&to=USD,EUR
  */
 export async function fetchExchangeRates(): Promise<ExchangeRates | null> {
-  try {
-    const res = await fetch(
-      "https://api.frankfurter.app/latest?from=RON&to=USD,EUR"
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      base: string;
-      rates: { USD?: number; EUR?: number };
-    };
-    const usd = data.rates?.USD;
-    const eur = data.rates?.EUR;
-    if (usd == null || eur == null || usd <= 0 || eur <= 0) return null;
-    return { usd, eur };
-  } catch {
-    return null;
-  }
+  const requestRates = async (): Promise<ExchangeRates | null> => {
+    try {
+      const res = await fetch(
+        "https://api.frankfurter.app/latest?from=RON&to=USD,EUR"
+      );
+      if (!res.ok) return null;
+      const data = (await res.json()) as {
+        base: string;
+        rates: { USD?: number; EUR?: number };
+      };
+      const usd = data.rates?.USD;
+      const eur = data.rates?.EUR;
+      if (usd == null || eur == null || usd <= 0 || eur <= 0) return null;
+      return { usd, eur };
+    } catch {
+      return null;
+    }
+  };
+
+  const firstTry = await requestRates();
+  if (firstTry) return firstTry;
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  return requestRates();
 }
 
 /**
@@ -102,13 +109,16 @@ export function formatRON(value: number): string {
  */
 export function parseRON(input: string): number {
   // Remove all non-numeric characters except dots, commas, and minus
-  const cleaned = input
-    .replace(/[^\d,.-]/g, "")
+  const normalized = input.replace(/[^\d,.-]/g, "");
+  const isNegative = normalized.trim().startsWith("-");
+  const cleaned = normalized
+    .replace(/-/g, "")
     .replace(/\./g, "")
     .replace(",", ".");
 
   const parsed = parseFloat(cleaned);
-  return isNaN(parsed) ? 0 : parsed;
+  if (isNaN(parsed)) return 0;
+  return isNegative ? -parsed : parsed;
 }
 
 /**

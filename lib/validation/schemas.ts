@@ -3,7 +3,8 @@
  */
 
 import { z } from "zod";
-import type { MonthString } from "../types";
+import type { MonthString, IncomeEstimateSummary, IncomeEstimateYearData } from "../types";
+import { getMonthsForYear } from "../utils/date";
 
 const monthStringRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -90,5 +91,26 @@ export function createDefaultCategoryAmounts(): z.infer<typeof CategoryAmountsSc
     alimente: 0,
     economii: 0,
     investitii: 0,
+  };
+}
+
+export function createDefaultIncomeEstimateSummary(): IncomeEstimateSummary {
+  return {
+    targetEconomiiLunare: 0,
+    economiiInceput: 0,
+  };
+}
+
+export function createDefaultIncomeEstimateYear(year: number): IncomeEstimateYearData {
+  const months = getMonthsForYear(year).reduce<Record<MonthString, number>>(
+    (acc, month) => {
+      acc[month] = 0;
+      return acc;
+    },
+    {} as Record<MonthString, number>
+  );
+
+  return {
+    months,
   };
 }

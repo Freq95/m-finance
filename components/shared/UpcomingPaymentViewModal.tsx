@@ -67,6 +67,18 @@ export function UpcomingPaymentViewModal({
       return item.date;
     }
   })();
+  const recurrenceLabel = (() => {
+    switch (item.recurrence) {
+      case "weekly":
+        return "Săptămânal";
+      case "monthly":
+        return "Lunar";
+      case "yearly":
+        return "Anual";
+      default:
+        return "Fără recurență";
+    }
+  })();
 
   const handleEdit = () => {
     onOpenChange(false);
@@ -123,6 +135,12 @@ export function UpcomingPaymentViewModal({
                 Data
               </p>
               <p className="text-sm text-textPrimary dark:text-white">{dateLabel}</p>
+            </div>
+            <div>
+              <p className="text-xs text-textSecondary dark:text-gray-300 uppercase tracking-wide mb-0.5">
+                Recurență
+              </p>
+              <p className="text-sm text-textPrimary dark:text-white">{recurrenceLabel}</p>
             </div>
             <div>
               <p className="text-xs text-textSecondary dark:text-gray-300 uppercase tracking-wide mb-0.5">

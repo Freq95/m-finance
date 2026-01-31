@@ -12,7 +12,7 @@ const BROWSER_NOTIFICATION_KEY = "finance-browser-notification-ids";
 function getDismissedIds(): string[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch {
     return [];
@@ -24,7 +24,7 @@ function addDismissedIds(ids: string[]): void {
   try {
     const current = getDismissedIds();
     const next = [...new Set([...current, ...ids])];
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   } catch {
     // ignore
   }
@@ -33,7 +33,7 @@ function addDismissedIds(ids: string[]): void {
 function getBrowserNotificationShownIds(): string[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = sessionStorage.getItem(BROWSER_NOTIFICATION_KEY);
+    const raw = localStorage.getItem(BROWSER_NOTIFICATION_KEY);
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch {
     return [];
@@ -45,7 +45,7 @@ function addBrowserNotificationShownIds(ids: string[]): void {
   try {
     const current = getBrowserNotificationShownIds();
     const next = [...new Set([...current, ...ids])];
-    sessionStorage.setItem(BROWSER_NOTIFICATION_KEY, JSON.stringify(next));
+    localStorage.setItem(BROWSER_NOTIFICATION_KEY, JSON.stringify(next));
   } catch {
     // ignore
   }
@@ -99,16 +99,21 @@ export function useDuePaymentsNotification() {
   }, [toShow, notificationsDaysBefore, formatDate]);
 
   useEffect(() => {
-    if (toShow.length === 0 || typeof window === "undefined" || !("Notification" in window))
-      return;
+    if (toShow.length === 0 || typeof window === "undefined") return;
+
+    const NotificationCtor = window.Notification;
+    if (!NotificationCtor) return;
+    if (typeof NotificationCtor.permission !== "string") return;
+    if (typeof NotificationCtor.requestPermission !== "function") return;
+
     const shownIds = getBrowserNotificationShownIds();
     const needsNotification = toShow.some((p) => !shownIds.includes(p.id));
     if (!needsNotification) return;
 
     const tryShow = () => {
-      if (Notification.permission === "granted") {
+      if (NotificationCtor.permission === "granted") {
         try {
-          new Notification("Plăți viitoare", {
+          new NotificationCtor("Plăți viitoare", {
             body: summary,
             icon: "/favicon.ico",
           });
@@ -118,11 +123,11 @@ export function useDuePaymentsNotification() {
         }
         return;
       }
-      if (Notification.permission === "default") {
-        Notification.requestPermission().then((permission) => {
+      if (NotificationCtor.permission === "default") {
+        NotificationCtor.requestPermission().then((permission) => {
           if (permission === "granted") {
             try {
-              new Notification("Plăți viitoare", {
+              new NotificationCtor("Plăți viitoare", {
                 body: summary,
                 icon: "/favicon.ico",
               });

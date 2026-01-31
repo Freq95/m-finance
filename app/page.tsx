@@ -3,7 +3,7 @@
 import { useFinanceStore } from "@/lib/store/finance-store";
 import { calculateNetCashflow } from "@/lib/calculations/calculations";
 import { getDataForPerson } from "@/lib/dashboard/dashboard-data";
-import { useDashboardData, useDashboardLoad } from "@/lib/dashboard/useDashboardData";
+import { useDashboardData } from "@/lib/dashboard/useDashboardData";
 import {
   METRIC_CARDS,
   STACK_KEYS_MAIN,
@@ -71,7 +71,6 @@ const currencyOptions: { value: DisplayCurrency; label: string; icon: React.Reac
 ];
 
 export default function Home() {
-  useDashboardLoad();
   const {
     chartData,
     currentData,
@@ -112,21 +111,6 @@ export default function Home() {
       compact: true,
     },
   ];
-
-  // #region agent log
-  fetch("http://127.0.0.1:7242/ingest/7fcaf6fd-2a4f-4cef-b98e-7aeb9ab2770b", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "page.tsx:Home:render",
-      message: "Dashboard render",
-      data: { isLoading, recordsLength: records?.length ?? -1, hasError: !!error },
-      timestamp: Date.now(),
-      sessionId: "debug-session",
-      hypothesisId: "H1,H3,H4",
-    }),
-  }).catch(() => {});
-  // #endregion
 
   if (isLoading) {
     return <DashboardSkeleton />;

@@ -16,7 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Trash2 } from "lucide-react";
+import { Trash2, ChevronDown } from "lucide-react";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface UpcomingPaymentModalProps {
@@ -33,11 +34,13 @@ const defaultForm = (): {
   title: string;
   date: string;
   cost: number;
+  recurrence: NonNullable<UpcomingPayment["recurrence"]>;
 } => ({
   icon: "Home",
   title: "",
-  date: new Date().toISOString().slice(0, 10),
+  date: format(new Date(), "yyyy-MM-dd"),
   cost: 0,
+  recurrence: "none",
 });
 
 export function UpcomingPaymentModal({
@@ -53,6 +56,16 @@ export function UpcomingPaymentModal({
 
   const [form, setForm] = React.useState(defaultForm);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+  const [dateError, setDateError] = React.useState<string | null>(null);
+  const [recurrenceOpen, setRecurrenceOpen] = React.useState(false);
+  const recurrenceRef = React.useRef<HTMLDivElement | null>(null);
+
+  const recurrenceOptions: { value: NonNullable<UpcomingPayment["recurrence"]>; label: string }[] = [
+    { value: "none", label: "Fără recurență" },
+    { value: "weekly", label: "Săptămânal" },
+    { value: "monthly", label: "Lunar" },
+    { value: "yearly", label: "Anual" },
+  ];
 
   const migrateIcon = (icon: string): UpcomingPaymentIconId => {
     if (icon === "Receipt") return "Wallet";
@@ -68,6 +81,7 @@ export function UpcomingPaymentModal({
           title: editItem.title,
           date: editItem.date,
           cost: editItem.cost ?? 0,
+          recurrence: editItem.recurrence ?? "none",
         });
       } else {
         setForm({
@@ -75,17 +89,36 @@ export function UpcomingPaymentModal({
           date: initialDate ?? defaultForm().date,
         });
       }
+      setDateError(null);
+      setRecurrenceOpen(false);
     }
   }, [open, editItem, initialDate]);
+
+  React.useEffect(() => {
+    if (!recurrenceOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (recurrenceRef.current?.contains(target)) return;
+      setRecurrenceOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [recurrenceOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    if (form.date < today) {
+      setDateError("Data trebuie să fie azi sau în viitor.");
+      return;
+    }
     const payload = {
       icon: form.icon,
       title: form.title.trim(),
       date: form.date,
       cost: form.cost === 0 ? null : form.cost,
+      recurrence: form.recurrence,
     };
     if (editItem) {
       updateUpcomingPayment(editItem.id, payload);
@@ -162,12 +195,79 @@ export function UpcomingPaymentModal({
             </label>
             <DatePicker
               value={form.date}
-              onChange={(date) => setForm((p) => ({ ...p, date }))}
+              onChange={(date) => {
+                setForm((p) => ({ ...p, date }));
+                const today = format(new Date(), "yyyy-MM-dd");
+                setDateError(date < today ? "Data trebuie să fie azi sau în viitor." : null);
+              }}
               locale={dateLocale}
               placeholder="Selectează data"
               required
               name="date"
             />
+            {dateError && (
+              <p className="mt-1 text-xs text-accentNegative">{dateError}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-textPrimary dark:text-white">
+              Recurență
+            </label>
+            <div ref={recurrenceRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setRecurrenceOpen((open) => !open)}
+                className={cn(
+                  "flex h-10 w-full items-center justify-between rounded-xl border border-white/20 dark:border-white/10",
+                  "glass-surface px-3 py-2 text-left text-sm transition-all duration-200",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accentPrimary/30 focus-visible:border-accentPrimary/40",
+                  "hover:bg-white/60 dark:hover:bg-white/5",
+                  "dark:text-white",
+                  recurrenceOpen && "ring-2 ring-accentPrimary/30 border-accentPrimary/40"
+                )}
+                aria-haspopup="listbox"
+                aria-expanded={recurrenceOpen}
+              >
+                <span className="text-textPrimary dark:text-white">
+                  {recurrenceOptions.find((o) => o.value === form.recurrence)?.label ?? "Fără recurență"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-textMuted dark:text-gray-400" />
+              </button>
+              {recurrenceOpen && (
+                <div
+                  className={cn(
+                    "absolute z-10 mt-2 w-full rounded-2xl border border-white/20 dark:border-white/10",
+                    "bg-[#2C2C2C] shadow-modal p-1"
+                  )}
+                  role="listbox"
+                >
+                  {recurrenceOptions.map((option) => {
+                    const selected = option.value === form.recurrence;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        role="option"
+                        aria-selected={selected}
+                        onClick={() => {
+                          setForm((p) => ({ ...p, recurrence: option.value }));
+                          setRecurrenceOpen(false);
+                        }}
+                        className={cn(
+                          "w-full rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                          selected
+                            ? "bg-white/10 text-white"
+                            : "text-textSecondary hover:bg-white/10 hover:text-white"
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>

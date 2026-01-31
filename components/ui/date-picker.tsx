@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { parse } from "date-fns";
+import { format, parse } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { formatDateDisplay } from "@/lib/utils/date";
@@ -44,18 +44,30 @@ export function DatePicker({
   const valueDate = value ? parse(value, "yyyy-MM-dd", new Date()) : undefined;
   const displayText = value ? formatDateDisplay(value, locale) : "";
 
+  const toLocalISODate = React.useCallback((date: Date) => {
+    const safe = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      12,
+      0,
+      0
+    );
+    return format(safe, "yyyy-MM-dd");
+  }, []);
+
   const handleSelect = React.useCallback(
     (date: Date) => {
-      const iso = date.toISOString().slice(0, 10);
+      const iso = toLocalISODate(date);
       onChange(iso);
       setOpen(false);
     },
-    [onChange]
+    [onChange, toLocalISODate]
   );
 
   const handleToday = () => {
     const today = new Date();
-    onChange(today.toISOString().slice(0, 10));
+    onChange(toLocalISODate(today));
     setOpen(false);
   };
 

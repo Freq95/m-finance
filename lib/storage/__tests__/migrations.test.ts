@@ -26,6 +26,16 @@ const validRecordV3 = {
 };
 
 describe("migrateData", () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
   it("migrates v2 (people me/wife) to v3 (people record)", () => {
     const v2 = { version: 2, data: [validRecordV2] };
     const result = migrateData(v2);

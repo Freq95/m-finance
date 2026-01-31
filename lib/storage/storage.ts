@@ -11,7 +11,7 @@ import { StorageError, ValidationError, logError } from "../utils/errors";
 import { getBestStorageType } from "../utils/browser";
 
 const STORAGE_KEY = "finance-dashboard-data";
-const CURRENT_VERSION = 3;
+export const CURRENT_VERSION = 3;
 
 // Configure localforage
 localforage.config({
@@ -43,42 +43,9 @@ function getStorage() {
  * Load all records from storage
  */
 export async function loadRecords(): Promise<MonthRecord[]> {
-  // #region agent log
-  fetch("http://127.0.0.1:7242/ingest/7fcaf6fd-2a4f-4cef-b98e-7aeb9ab2770b", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "storage.ts:loadRecords:entry",
-      message: "loadRecords (storage) called",
-      data: { key: STORAGE_KEY },
-      timestamp: Date.now(),
-      sessionId: "debug-session",
-      hypothesisId: "H2,H5",
-    }),
-  }).catch(() => {});
-  // #endregion
   try {
     const storage = getStorage();
     const data = await storage.getItem<StorageSchema>(STORAGE_KEY);
-
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/7fcaf6fd-2a4f-4cef-b98e-7aeb9ab2770b", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        location: "storage.ts:loadRecords:afterGetItem",
-        message: "getItem returned",
-        data: {
-          hasData: !!data,
-          dataLength: data?.data?.length ?? -1,
-          returningEmpty: !data,
-        },
-        timestamp: Date.now(),
-        sessionId: "debug-session",
-        hypothesisId: "H2",
-      }),
-    }).catch(() => {});
-    // #endregion
 
     if (!data) {
       return [];
@@ -100,20 +67,6 @@ export async function loadRecords(): Promise<MonthRecord[]> {
  * Save all records to storage
  */
 export async function saveRecords(records: MonthRecord[]): Promise<void> {
-  // #region agent log
-  fetch("http://127.0.0.1:7242/ingest/7fcaf6fd-2a4f-4cef-b98e-7aeb9ab2770b", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "storage.ts:saveRecords:entry",
-      message: "saveRecords called (e.g. import)",
-      data: { recordsLength: records?.length ?? -1, key: STORAGE_KEY },
-      timestamp: Date.now(),
-      sessionId: "debug-session",
-      hypothesisId: "H2,H5",
-    }),
-  }).catch(() => {});
-  // #endregion
   try {
     const storage = getStorage();
     const schema: StorageSchema = {

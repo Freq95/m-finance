@@ -9,6 +9,16 @@ import { logError } from "../utils/errors";
 
 const CURRENT_VERSION = 3;
 
+function normalizeUpdatedAt(value: unknown): string {
+  if (typeof value === "string") {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+  }
+  return new Date().toISOString();
+}
+
 /**
  * Migrate data from an older version to the current version
  */
@@ -112,7 +122,10 @@ function migrateV1ToV2(data: { version?: number; data?: unknown }): StorageSchem
     const result = StorageSchemaZod.shape.data.element.safeParse({
       month: r.month,
       people: { me, wife },
-      meta: r.meta,
+      meta: {
+        updatedAt: normalizeUpdatedAt(r.meta?.updatedAt),
+        isSaved: Boolean(r.meta?.isSaved),
+      },
     });
     if (result.success) validRecords.push(result.data);
     else logError(`Invalid record after migration: ${r.month}`, "migrateV1ToV2");
@@ -141,7 +154,10 @@ function migrateV2ToV3(data: { version?: number; data?: unknown }): StorageSchem
     const result = StorageSchemaZod.shape.data.element.safeParse({
       month: r.month,
       people: peopleRecord,
-      meta: r.meta,
+      meta: {
+        updatedAt: normalizeUpdatedAt(r.meta?.updatedAt),
+        isSaved: Boolean(r.meta?.isSaved),
+      },
     });
     if (result.success) validRecords.push(result.data);
     else logError(`Invalid record after v2→v3 migration: ${r.month}`, "migrateV2ToV3");
@@ -156,7 +172,17 @@ function migrateV3ToV3(data: { version?: number; data?: unknown }): StorageSchem
   if (Array.isArray(data.data)) {
     const validRecords: MonthRecord[] = [];
     for (const record of data.data) {
-      const result = StorageSchemaZod.shape.data.element.safeParse(record);
+      const raw = record as {
+        meta?: { updatedAt?: unknown; isSaved?: unknown };
+      };
+      const normalized = {
+        ...record,
+        meta: {
+          updatedAt: normalizeUpdatedAt(raw.meta?.updatedAt),
+          isSaved: Boolean(raw.meta?.isSaved),
+        },
+      };
+      const result = StorageSchemaZod.shape.data.element.safeParse(normalized);
       if (result.success) {
         validRecords.push(result.data);
       } else {
@@ -177,7 +203,10 @@ function migrateV3ToV3(data: { version?: number; data?: unknown }): StorageSchem
 export function validateSchema(data: unknown): StorageSchema {
   const result = StorageSchemaZod.safeParse(data);
   if (result.success) {
-    return result.data;
+    if (result.data.version === CURRENT_VERSION) {
+      return result.data;
+    }
+    return migrateData(result.data);
   }
 
   // Try to migrate

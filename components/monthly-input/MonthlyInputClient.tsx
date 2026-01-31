@@ -44,6 +44,7 @@ export function MonthlyInputClient() {
   const getCurrentMonthRecord = useFinanceStore((s) => s.getCurrentMonthRecord);
   const updateMonthFull = useFinanceStore((s) => s.updateMonthFull);
   const saveMonth = useFinanceStore((s) => s.saveMonth);
+  const saveAllMonths = useFinanceStore((s) => s.saveAllMonths);
   const profiles = useFinanceStore((s) => s.profiles);
   const duplicateMonth = useFinanceStore((s) => s.duplicateMonth);
   const resetMonth = useFinanceStore((s) => s.resetMonth);
@@ -72,10 +73,6 @@ export function MonthlyInputClient() {
   }, [getCurrentMonthRecord, profiles]);
 
   React.useEffect(() => {
-    loadRecords();
-  }, [loadRecords]);
-
-  React.useEffect(() => {
     if (profiles.length > 0) initFromStore();
   }, [selectedMonth, initKey, initFromStore, profiles.length]);
 
@@ -101,7 +98,7 @@ export function MonthlyInputClient() {
   const handleSave = async () => {
     flush.cancel();
     updateMonthFull(selectedMonth, formDataRef.current);
-    await saveMonth(selectedMonth);
+    await saveAllMonths();
     initFromStore();
   };
 
@@ -235,14 +232,16 @@ export function MonthlyInputClient() {
                 variant="glass"
                 side="bottom"
                 content={
-                  record ? (
+                  records.length > 0 ? (
                     <div className="space-y-0.5">
                       <div className="font-medium">
-                        {record.meta.isSaved ? "Salvat" : "Ciornă"}
+                        {records.every((r) => r.meta.isSaved) ? "Tot salvat" : "Există ciorne"}
                       </div>
-                      <div className="text-white/80 text-xs">
-                        Ultima salvare: {format(parseISO(record.meta.updatedAt), "d MMM yyyy, HH:mm", { locale: ro })}
-                      </div>
+                      {record?.meta?.updatedAt && (
+                        <div className="text-white/80 text-xs">
+                          Ultima salvare: {format(parseISO(record.meta.updatedAt), "d MMM yyyy, HH:mm", { locale: ro })}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <span className="text-white/80 text-sm">Nu există salvare</span>
@@ -252,9 +251,9 @@ export function MonthlyInputClient() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={isSaving || (record?.meta.isSaved === true)}
+                  disabled={isSaving || records.length === 0}
                   role="group"
-                  aria-label={isSaving ? "Se salvează…" : "Salvează luna curentă"}
+                  aria-label={isSaving ? "Se salvează…" : "Salvează toate lunile"}
                   className={cn(
                     "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-normal ease-liquid",
                     "ring-2 ring-white/20 dark:ring-white/15",

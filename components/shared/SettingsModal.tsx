@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useFinanceStore } from "@/lib/store/finance-store";
+import { useState, useRef, useEffect } from "react";
+import { useFinanceStore, MAX_PROFILES, MIN_PROFILES } from "@/lib/store/finance-store";
 import {
   Dialog,
   DialogContent,
@@ -20,14 +20,22 @@ import { Input } from "@/components/ui/input";
 import type { PersonView, ProfileId } from "@/lib/types";
 import { Pencil, Trash2, Plus } from "lucide-react";
 
+interface SettingsModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
 export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const profiles = useFinanceStore((s) => s.profiles);
+  const records = useFinanceStore((s) => s.records);
   const addProfile = useFinanceStore((s) => s.addProfile);
   const removeProfile = useFinanceStore((s) => s.removeProfile);
   const renameProfile = useFinanceStore((s) => s.renameProfile);
   const setProfiles = useFinanceStore((s) => s.setProfiles);
   const settings = useFinanceStore((s) => s.settings);
   const updateSettings = useFinanceStore((s) => s.updateSettings);
+  const theme = useFinanceStore((s) => s.theme);
+  const setTheme = useFinanceStore((s) => s.setTheme);
   const loadRecords = useFinanceStore((s) => s.loadRecords);
   const resetAllData = useFinanceStore((s) => s.resetAllData);
   const setExchangeRates = useFinanceStore((s) => s.setExchangeRates);
@@ -40,11 +48,35 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [importMode, setImportMode] = useState<"replace" | "merge">("replace");
+  const [notificationPermission, setNotificationPermission] =
+    useState<NotificationPermission | "unsupported">("unsupported");
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [importConfirmOpen, setImportConfirmOpen] = useState(false);
   const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
   const [refreshingRates, setRefreshingRates] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!("Notification" in window)) {
+      setNotificationPermission("unsupported");
+      return;
+    }
+    setNotificationPermission(Notification.permission);
+  }, [open]);
+
+  const handleRequestNotificationPermission = async () => {
+    if (typeof window === "undefined") return;
+    if (!("Notification" in window)) {
+      setNotificationPermission("unsupported");
+      return;
+    }
+    if (Notification.permission === "default") {
+      const result = await Notification.requestPermission();
+      setNotificationPermission(result);
+    }
+  };
 
   const handleExport = async (format: "full" | "data_only" = "full") => {
     try {
@@ -73,14 +105,28 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     if (!pendingImportFile) return;
     setDataMessage(null);
     try {
-      const payload = await importBackup(pendingImportFile);
+      const payload = await importBackup(pendingImportFile, {
+        mode: importMode,
+        existingRecords: records,
+      });
       if (payload.profiles && payload.profiles.length > 0) {
-        setProfiles(payload.profiles);
+        if (importMode === "merge") {
+          const existingById = new Map(profiles.map((p) => [p.id, p]));
+          for (const p of payload.profiles) {
+            if (!existingById.has(p.id)) existingById.set(p.id, p);
+          }
+          setProfiles(Array.from(existingById.values()));
+        } else {
+          setProfiles(payload.profiles);
+        }
       }
       await loadRecords();
       setDataMessage({
         type: "success",
-        text: "Data restored. Current data was replaced.",
+        text:
+          importMode === "merge"
+            ? "Data merged successfully."
+            : "Data restored. Current data was replaced.",
       });
       setPendingImportFile(null);
     } catch (err) {
@@ -183,7 +229,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 Profiles
               </h2>
               <p className="text-sm text-textSecondary dark:text-gray-300 mb-4">
-                Add, rename, or hide profiles. Hidden profiles keep their data but are not shown.
+                Manage profiles (min {MIN_PROFILES}, max {MAX_PROFILES}). Currently: {profiles.length}/{MAX_PROFILES}
               </p>
               <ul className="space-y-2 mb-3">
                 {profiles.map((p) => (
@@ -236,8 +282,15 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         <button
                           type="button"
                           onClick={() => setRemoveProfileId(p.id)}
-                          className="p-1.5 rounded-lg hover:bg-accentNegative/10 text-accentNegative"
-                          aria-label="Ascunde profil"
+                          disabled={profiles.length <= MIN_PROFILES}
+                          className={cn(
+                            "p-1.5 rounded-lg",
+                            profiles.length <= MIN_PROFILES
+                              ? "opacity-30 cursor-not-allowed text-textMuted"
+                              : "hover:bg-accentNegative/10 text-accentNegative"
+                          )}
+                          aria-label={profiles.length <= MIN_PROFILES ? "Nu poți șterge ultimul profil" : "Ascunde profil"}
+                          title={profiles.length <= MIN_PROFILES ? "Trebuie să existe cel puțin un profil" : "Ascunde profil"}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -252,8 +305,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   onChange={(e) => setNewProfileName(e.target.value)}
                   placeholder="Nume profil nou"
                   className="max-w-[200px]"
+                  disabled={profiles.length >= MAX_PROFILES}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && profiles.length < MAX_PROFILES) {
                       addProfile(newProfileName);
                       setNewProfileName("");
                     }
@@ -266,12 +320,18 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     addProfile(newProfileName);
                     setNewProfileName("");
                   }}
-                  disabled={!newProfileName.trim()}
+                  disabled={!newProfileName.trim() || profiles.length >= MAX_PROFILES}
+                  title={profiles.length >= MAX_PROFILES ? `Maximum ${MAX_PROFILES} profiluri` : undefined}
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Adaugă profil
                 </Button>
               </div>
+              {profiles.length >= MAX_PROFILES && (
+                <p className="mt-2 text-xs text-textSecondary dark:text-gray-400">
+                  Ai atins numărul maxim de profiluri ({MAX_PROFILES}).
+                </p>
+              )}
             </section>
 
             <section>
@@ -320,6 +380,41 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   )}
                 >
                   Împreună
+                </button>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-medium text-textPrimary dark:text-white mb-1">
+                Theme
+              </h2>
+              <p className="text-sm text-textSecondary dark:text-gray-300 mb-4">
+                Choose between light and dark mode.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTheme("light")}
+                  className={cn(
+                    "rounded-xl px-3 py-2 text-sm font-medium transition-all border",
+                    theme === "light"
+                      ? "bg-accentPrimary/20 border-accentPrimary/40 text-textPrimary dark:text-white"
+                      : "glass-surface border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/20 dark:hover:bg-white/10"
+                  )}
+                >
+                  Light
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTheme("dark")}
+                  className={cn(
+                    "rounded-xl px-3 py-2 text-sm font-medium transition-all border",
+                    theme === "dark"
+                      ? "bg-accentPrimary/20 border-accentPrimary/40 text-textPrimary dark:text-white"
+                      : "glass-surface border-white/20 dark:border-white/10 text-textSecondary hover:bg-white/20 dark:hover:bg-white/10"
+                  )}
+                >
+                  Dark
                 </button>
               </div>
             </section>
@@ -465,6 +560,33 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   </button>
                 ))}
               </div>
+              {notificationPermission === "unsupported" && (
+                <p className="mt-3 text-xs text-textSecondary dark:text-gray-300">
+                  Browser notifications are not supported in this environment.
+                </p>
+              )}
+              {notificationPermission === "default" && (
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleRequestNotificationPermission}
+                  >
+                    Allow browser notifications
+                  </Button>
+                </div>
+              )}
+              {notificationPermission === "granted" && (
+                <p className="mt-3 text-xs text-accentPositive">
+                  Notifications are enabled in this browser.
+                </p>
+              )}
+              {notificationPermission === "denied" && (
+                <p className="mt-3 text-xs text-accentNegative">
+                  Notifications are blocked. Enable them in your browser settings.
+                </p>
+              )}
             </section>
 
             <section>
@@ -472,9 +594,30 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 Data
               </h2>
               <p className="text-sm text-textSecondary dark:text-gray-300 mb-4">
-                Export a JSON backup or restore from a previous backup. Import replaces all current data.
+                Export a JSON backup or restore from a previous backup. Choose whether to replace or merge data.
               </p>
-              <div className="flex flex-wrap items-center gap-3">
+              <label
+                className={cn(
+                  "flex cursor-pointer items-center justify-between gap-4 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-4 py-3 transition-all duration-normal ease-liquid hover:bg-white/20 dark:hover:bg-white/10",
+                  importMode === "merge" &&
+                    "border-accentPrimary/40 bg-accentPrimary/10 dark:bg-accentPrimary/20"
+                )}
+                htmlFor="settings-modal-import-merge"
+              >
+                <span className="text-sm text-textPrimary dark:text-gray-100">
+                  Merge on import (keep newer records)
+                </span>
+                <input
+                  id="settings-modal-import-merge"
+                  type="checkbox"
+                  checked={importMode === "merge"}
+                  onChange={(e) =>
+                    setImportMode(e.target.checked ? "merge" : "replace")
+                  }
+                  className="h-4 w-4 rounded border-border text-accentPrimary focus:ring-2 focus:ring-accentPrimary/30"
+                />
+              </label>
+              <div className="flex flex-wrap items-center gap-3 mt-3">
                 <Button variant="secondary" onClick={() => handleExport("full")}>
                   Export full backup
                 </Button>
@@ -540,6 +683,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         cancelLabel="Cancel"
         onConfirm={handleClearAllData}
         variant="danger"
+        confirmationText="DELETE"
+        confirmationPlaceholder="Type DELETE to confirm"
       />
 
       <ConfirmationModal
@@ -549,21 +694,25 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           if (!open) setPendingImportFile(null);
         }}
         title="Import from file?"
-        description="Replace current data with backup? Existing data will be overwritten."
+        description={
+          importMode === "merge"
+            ? "Merge backup data into current data. Newer records are kept."
+            : "Replace current data with backup? Existing data will be overwritten."
+        }
         confirmLabel="Import"
         cancelLabel="Cancel"
         onConfirm={handleImportConfirm}
       />
 
       <ConfirmationModal
-        open={!!removeProfileId}
+        open={!!removeProfileId && profiles.length > MIN_PROFILES}
         onOpenChange={(open) => !open && setRemoveProfileId(null)}
         title="Ascunde profil?"
         description="Profilul va fi ascuns din listă. Datele rămân salvate. Poți adăuga din nou un profil mai târziu."
         confirmLabel="Ascunde"
         cancelLabel="Anulare"
         onConfirm={() => {
-          if (removeProfileId) {
+          if (removeProfileId && profiles.length > MIN_PROFILES) {
             removeProfile(removeProfileId);
             setRemoveProfileId(null);
           }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useFinanceStore } from "@/lib/store/finance-store";
 import type { PersonView } from "@/lib/types";
-import { Calendar, Bell, User, Settings, Moon, Sun } from "lucide-react";
+import { Calendar, Bell, User, Settings, Moon, Sun, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDuePaymentsNotification } from "@/lib/useDuePaymentsNotification";
 import { DuePaymentsModal } from "@/components/shared/DuePaymentsModal";
@@ -25,9 +25,11 @@ function getPageMeta(pathname: string) {
 export function Header({
   onOpenSettings,
   onOpenCalendar,
+  onOpenSavingsPlan,
 }: {
   onOpenSettings: () => void;
   onOpenCalendar?: () => void;
+  onOpenSavingsPlan?: () => void;
 }) {
   const pathname = usePathname();
   const profiles = useFinanceStore((s) => s.profiles);
@@ -121,25 +123,32 @@ export function Header({
           role="group"
           aria-label="Curs valutar"
           className={cn(
-            "inline-flex items-center gap-1 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-2 py-2.5 min-h-[2.5rem]"
+            "inline-flex items-center gap-2 rounded-xl glass-surface border border-white/20 dark:border-white/10 px-2 py-2.5 min-h-[2.5rem]"
           )}
         >
-          <span
-            className="shrink-0 text-sm font-medium text-textSecondary dark:text-gray-300"
-            aria-live="polite"
-          >
-            {exchangeRates ? `$ ${(1 / exchangeRates.usd).toFixed(2)}` : "$ —"}
-          </span>
-          <span
-            className="w-px h-4 bg-white/20 dark:bg-white/15 shrink-0"
-            aria-hidden
-          />
-          <span
-            className="shrink-0 text-sm font-medium text-textSecondary dark:text-gray-300"
-            aria-live="polite"
-          >
-            {exchangeRates ? `€ ${(1 / exchangeRates.eur).toFixed(2)}` : "€ —"}
-          </span>
+          <div className="inline-flex items-center gap-1">
+            <span
+              className="shrink-0 text-sm font-medium text-textSecondary dark:text-gray-300"
+              aria-live="polite"
+            >
+              {exchangeRates ? `$ ${(1 / exchangeRates.usd).toFixed(2)}` : "$ —"}
+            </span>
+            <span
+              className="w-px h-4 bg-white/20 dark:bg-white/15 shrink-0"
+              aria-hidden
+            />
+            <span
+              className="shrink-0 text-sm font-medium text-textSecondary dark:text-gray-300"
+              aria-live="polite"
+            >
+              {exchangeRates ? `€ ${(1 / exchangeRates.eur).toFixed(2)}` : "€ —"}
+            </span>
+          </div>
+          {!exchangeRates && (
+            <span className="text-xs text-textMuted dark:text-white/60">
+              Rates unavailable
+            </span>
+          )}
         </div>
         <button
           type="button"
@@ -164,6 +173,14 @@ export function Header({
           ) : (
             <Moon className="h-5 w-5" />
           )}
+        </button>
+        <button
+          type="button"
+          onClick={onOpenSavingsPlan ?? undefined}
+          className="rounded-xl p-2.5 glass-surface text-textSecondary hover:bg-white/60 hover:text-textPrimary transition-all duration-normal ease-liquid dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white border border-transparent hover:border-white/20 dark:hover:border-white/10"
+          aria-label="Plan economii"
+        >
+          <ClipboardList className="h-5 w-5" />
         </button>
         <button
           type="button"

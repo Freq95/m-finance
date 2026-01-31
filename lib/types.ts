@@ -57,6 +57,45 @@ export type CategoryAmounts = {
   investitii: number;
 };
 
+export type SavingsPlanItem = {
+  id: string;
+  label: string;
+  amount: number;
+  note?: string;
+};
+
+export type SavingsPlanBlock = {
+  id: string;
+  title: string;
+  income: number;
+  out: number;
+  allocations: SavingsPlanItem[];
+  note?: string;
+};
+
+export type SavingsPlan = {
+  expenses: SavingsPlanItem[];
+  blocks: SavingsPlanBlock[];
+  milestones: SavingsPlanItem[];
+  notes: string[];
+};
+
+export type IncomeEstimateSummary = {
+  targetEconomiiLunare: number;
+  economiiInceput: number;
+};
+
+export type IncomeEstimateYearData = {
+  months: Record<MonthString, number>;
+};
+
+export type IncomeEstimatesByProfile = Record<
+  ProfileId,
+  Record<number, IncomeEstimateYearData>
+>;
+
+export type IncomeEstimateSummaryByYear = Record<number, IncomeEstimateSummary>;
+
 export type MonthRecord = {
   month: MonthString;
   /** Keyed by ProfileId. v3: Record<ProfileId, CategoryAmounts>. */
@@ -96,9 +135,12 @@ export type UpcomingPayment = {
   title: string;
   date: string; // YYYY-MM-DD
   cost: number | null; // null if unknown
+  recurrence?: "none" | "weekly" | "monthly" | "yearly";
 };
 
 /** Completed upcoming payment, moved to Recent Activities */
 export type RecentActivity = UpcomingPayment & {
   completedAt: string; // ISO date when marked as done
+  /** Original upcoming payment id (for recurring items) */
+  sourceId?: string;
 };
